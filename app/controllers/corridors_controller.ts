@@ -1,9 +1,10 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Corridor from '#models/corridor'
+import CorridorCalculationService from '#services/corridor_calculation_service'
 
 export default class CorridorsController {
   /**
-   * List corridors with optional filters.
+   * List corridors with optional filters and attached calculations.
    *
    * Supported filters:
    * region
@@ -55,9 +56,17 @@ export default class CorridorsController {
 
     const corridors = await query
 
+    const data = corridors.map((corridor) => ({
+      ...corridor.serialize(),
+      calculations: CorridorCalculationService.calculate(corridor),
+    }))
+
     return response.ok({
-      data: corridors,
-      count: corridors.length,
+      data,
+      count: data.length,
+      meta: {
+        total: data.length,
+      },
     })
   }
 
@@ -77,7 +86,10 @@ export default class CorridorsController {
     }
 
     return response.ok({
-      data: corridor,
+      data: {
+        ...corridor.serialize(),
+        calculations: CorridorCalculationService.calculate(corridor),
+      },
     })
   }
 

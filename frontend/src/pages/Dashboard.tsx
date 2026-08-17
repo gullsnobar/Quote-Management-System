@@ -1,0 +1,446 @@
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { quotesApi } from '../api/quotesApi'
+import type { Quote, QuoteStatus } from '../types/quote'
+import { Navbar } from '../components/Navbar'
+import { StatusBadge } from '../components/StatusBadge'
+import { 
+  FileText, 
+  PlusCircle, 
+  Search, 
+  Send, 
+  Trash2, 
+  ArrowRight, 
+  Clock, 
+  CheckCircle2, 
+  XCircle, 
+  FileEdit, 
+  X,
+  Building2,
+  Calendar
+} from 'lucide-react'
+
+export const Dashboard: React.FC = () => {
+  const [quotes, setQuotes] = useState<Quote[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('')
+  
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [name, setName] = useState('')
+  const [partnerName, setPartnerName] = useState('')
+  const [isCreating, setIsCreating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchQuotes = async () => {
+    try {
+      setIsLoading(true)
+      const res = await quotesApi.getQuotes({
+        search: search || undefined,
+        status: statusFilter || undefined,
+      })
+      setQuotes(res.data)
+    } catch (err: any) {
+      console.error(err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchQuotes()
+  }, [search, statusFilter])
+
+  const handleCreateQuote = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setIsCreating(true)
+
+    try {
+      await quotesApi.createQuote({ name, partnerName })
+      setIsModalOpen(false)
+      setName('')
+      setPartnerName('')
+      await fetchQuotes()
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to create quote')
+    } finally {
+      setIsCreating(false)
+    }
+  }
+
+  const handleSubmitQuote = async (id: number, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!window.confirm('Submit this quote for review? Status will change to in_review.')) return
+
+    try {
+      await quotesApi.submitQuote(id)
+      await fetchQuotes()
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Submission failed')
+    }
+  }
+
+  const handleDeleteQuote = async (id: number, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!window.confirm('Are you sure you want to delete this quote?')) return
+
+    try {
+      await quotesApi.deleteQuote(id)
+      await fetchQuotes()
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Delete failed')
+    }
+  }
+
+  // Calculate statistics
+  const stats = {
+    total: quotes.length,
+    draft: quotes.filter((q) => q.status === 'draft').length,
+    in_review: quotes.filter((q) => q.status === 'in_review').length,
+    approved: quotes.filter((q) => q.status === 'approved').length,
+    rejected: quotes.filter((q) => q.status === 'rejected').length,
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', paddingBottom: 60 }}>
+      <Navbar onNewQuote={() => setIsModalOpen(true)} />
+
+      <main style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 24px' }}>
+        {/* Page Header */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 32,
+          flexWrap: 'wrap',
+          gap: 16,
+        }}>
+          <div>
+            <h1 style={{ fontSize: 28, fontWeight: 800 }}>Quotes Dashboard</h1>
+            <p style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>
+              Manage commercial quotes, review cycles, and corridor fee structures
+            </p>
+          </div>
+
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="btn btn-primary"
+          >
+            <PlusCircle size={18} />
+            <span>Create New Quote</span>
+          </button>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="stat-grid">
+          <div className="stat-card">
+            <div className="stat-icon" style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}>
+              <FileText size={24} />
+            </div>
+            <div>
+              <div className="stat-value">{stats.total}</div>
+              <div className="stat-label">Total Quotes</div>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon" style={{ background: 'var(--warning-light)', color: '#fbbf24' }}>
+              <FileEdit size={24} />
+            </div>
+            <div>
+              <div className="stat-value" style={{ color: '#fbbf24' }}>{stats.draft}</div>
+              <div className="stat-label">Drafts (Editable)</div>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon" style={{ background: 'var(--purple-light)', color: 'var(--purple)' }}>
+              <Clock size={24} />
+            </div>
+            <div>
+              <div className="stat-value" style={{ color: 'var(--purple)' }}>{stats.in_review}</div>
+              <div className="stat-label">In Review (Locked)</div>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon" style={{ background: 'var(--success-light)', color: '#34d399' }}>
+              <CheckCircle2 size={24} />
+            </div>
+            <div>
+              <div className="stat-value" style={{ color: '#34d399' }}>{stats.approved}</div>
+              <div className="stat-label">Approved</div>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon" style={{ background: 'var(--danger-light)', color: '#f87171' }}>
+              <XCircle size={24} />
+            </div>
+            <div>
+              <div className="stat-value" style={{ color: '#f87171' }}>{stats.rejected}</div>
+              <div className="stat-label">Rejected (Re-editable)</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Search & Filter Bar */}
+        <div className="glass-panel" style={{ padding: '16px 20px', marginBottom: 24, display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+          {/* Search Input */}
+          <div style={{ position: 'relative', minWidth: 280, flex: 1, maxWidth: 460 }}>
+            <Search size={16} color="var(--text-dim)" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
+            <input
+              type="text"
+              className="form-input"
+              style={{ paddingLeft: 40 }}
+              placeholder="Search by quote name or partner..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          {/* Status Tabs */}
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {[
+              { id: '', label: 'All' },
+              { id: 'draft', label: 'Draft' },
+              { id: 'in_review', label: 'In Review' },
+              { id: 'approved', label: 'Approved' },
+              { id: 'rejected', label: 'Rejected' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setStatusFilter(tab.id)}
+                className={`btn btn-sm ${statusFilter === tab.id ? 'btn-primary' : 'btn-secondary'}`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Quotes List */}
+        {isLoading ? (
+          <div className="glass-panel" style={{ padding: 60, textAlign: 'center' }}>
+            <div style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              border: '3px solid var(--border-medium)',
+              borderTopColor: 'var(--primary)',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 12px',
+            }} />
+            <p style={{ color: 'var(--text-muted)' }}>Loading quotes...</p>
+          </div>
+        ) : quotes.length === 0 ? (
+          <div className="glass-panel" style={{ padding: 60, textAlign: 'center' }}>
+            <div style={{
+              width: 52,
+              height: 52,
+              borderRadius: '50%',
+              background: 'var(--primary-light)',
+              color: 'var(--primary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+            }}>
+              <FileText size={26} />
+            </div>
+            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>No Quotes Found</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 20 }}>
+              {search || statusFilter ? 'Try clearing your search or status filter' : 'Create your first commercial quote to start pricing corridors'}
+            </p>
+            <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
+              <PlusCircle size={16} />
+              <span>Create Quote</span>
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 20 }}>
+            {quotes.map((quote) => {
+              const isEditable = quote.status === 'draft' || quote.status === 'rejected'
+
+              return (
+                <div
+                  key={quote.id}
+                  className="glass-card"
+                  style={{
+                    padding: 24,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--cyan)', fontFamily: 'var(--font-mono)' }}>
+                        QUOTE #{quote.id}
+                      </span>
+                      <StatusBadge status={quote.status as QuoteStatus} size="sm" />
+                    </div>
+
+                    <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: 'var(--text-main)' }}>
+                      {quote.name}
+                    </h3>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)', fontSize: 13, marginBottom: 12 }}>
+                      <Building2 size={14} color="var(--primary)" />
+                      <span>{quote.partnerName}</span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-dim)', fontSize: 12 }}>
+                      <Calendar size={13} />
+                      <span>Updated: {new Date(quote.updatedAt || quote.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+
+                  {/* Card Actions */}
+                  <div style={{
+                    marginTop: 20,
+                    paddingTop: 16,
+                    borderTop: '1px solid var(--border-subtle)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 8,
+                  }}>
+                    <Link
+                      to={`/quotes/${quote.id}`}
+                      className="btn btn-secondary btn-sm"
+                      style={{ flex: 1, textDecoration: 'none' }}
+                    >
+                      <span>View Details</span>
+                      <ArrowRight size={14} />
+                    </Link>
+
+                    {isEditable && (
+                      <button
+                        onClick={(e) => handleSubmitQuote(quote.id, e)}
+                        className="btn btn-success btn-sm"
+                        title="Submit quote for review (AC-3)"
+                      >
+                        <Send size={13} />
+                        <span>Submit</span>
+                      </button>
+                    )}
+
+                    <button
+                      onClick={(e) => handleDeleteQuote(quote.id, e)}
+                      className="btn btn-danger btn-sm"
+                      style={{ padding: '7px 10px' }}
+                      title="Delete quote"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </main>
+
+      {/* Create Quote Modal */}
+      {isModalOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.75)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: 20,
+        }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: 480, padding: 32, position: 'relative' }}>
+            <button
+              onClick={() => setIsModalOpen(false)}
+              style={{
+                position: 'absolute',
+                top: 20,
+                right: 20,
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+              }}
+            >
+              <X size={20} />
+            </button>
+
+            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Create New Quote</h2>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
+              Initial status will automatically be set to <strong>draft</strong> (AC-2)
+            </p>
+
+            {error && (
+              <div style={{
+                padding: '10px 14px',
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--danger-light)',
+                color: '#f87171',
+                fontSize: 13,
+                marginBottom: 16,
+              }}>
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleCreateQuote}>
+              <div className="form-group">
+                <label className="form-label">Quote Name</label>
+                <input
+                  type="text"
+                  required
+                  className="form-input"
+                  placeholder="e.g. Q3 2026 Remittance Agreement"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 24 }}>
+                <label className="form-label">Partner Name</label>
+                <input
+                  type="text"
+                  required
+                  className="form-input"
+                  placeholder="e.g. Wise Ltd., Banking Circle"
+                  value={partnerName}
+                  onChange={(e) => setPartnerName(e.target.value)}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="btn btn-secondary"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isCreating}
+                  className="btn btn-primary"
+                >
+                  {isCreating ? 'Creating...' : 'Create Quote'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
