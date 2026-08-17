@@ -32,6 +32,57 @@ export class AuthAccessTokenSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class CorridorSchema extends BaseModel {
+  static $columns = ['atvUsd', 'corridorId', 'costFixedPerUsd', 'costVariablePerTrx', 'country', 'createdAt', 'defaultFxSpread', 'fxSource', 'historicalAtv', 'id', 'needsApproval', 'payer', 'payoutCurrency', 'receivingPartner', 'region', 'service', 'sourceRowId', 'stdFixedFeeUsd', 'transactionType', 'treasuryFxCost', 'updatedAt', 'variableFeePercentage', 'versionId'] as const
+  $columns = CorridorSchema.$columns
+  @column()
+  declare atvUsd: string
+  @column()
+  declare corridorId: number
+  @column()
+  declare costFixedPerUsd: string
+  @column()
+  declare costVariablePerTrx: string
+  @column()
+  declare country: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare defaultFxSpread: string
+  @column()
+  declare fxSource: string
+  @column()
+  declare historicalAtv: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare needsApproval: boolean
+  @column()
+  declare payer: string
+  @column()
+  declare payoutCurrency: string
+  @column()
+  declare receivingPartner: string
+  @column()
+  declare region: string
+  @column()
+  declare service: string
+  @column()
+  declare sourceRowId: string
+  @column()
+  declare stdFixedFeeUsd: string
+  @column()
+  declare transactionType: string
+  @column()
+  declare treasuryFxCost: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare variableFeePercentage: string
+  @column()
+  declare versionId: number
+}
+
 export class QuoteSchema extends BaseModel {
   static $columns = ['createdAt', 'id', 'name', 'partnerName', 'status', 'updatedAt', 'userId'] as const
   $columns = QuoteSchema.$columns

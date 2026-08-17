@@ -10,12 +10,24 @@ export interface ApiDefinition {
       store: typeof routes['auth.access_tokens.store']
     }
   }
-  profile: {
+  account: {
     profile: {
-      show: typeof routes['profile.profile.show']
+      show: typeof routes['account.profile.show']
     }
     accessTokens: {
-      destroy: typeof routes['profile.access_tokens.destroy']
+      destroy: typeof routes['account.access_tokens.destroy']
+    }
+    quotes: {
+      index: typeof routes['account.quotes.index']
+      store: typeof routes['account.quotes.store']
+      show: typeof routes['account.quotes.show']
+      update: typeof routes['account.quotes.update']
+      destroy: typeof routes['account.quotes.destroy']
+      submit: typeof routes['account.quotes.submit']
+    }
+    corridors: {
+      index: typeof routes['account.corridors.index']
+      show: typeof routes['account.corridors.show']
     }
   }
 }

@@ -144,4 +144,39 @@ export default class QuotesController {
       message: 'Quote deleted successfully',
     }
   }
+
+  /**
+   * Submit a quote for review.
+   *
+   * Only draft and rejected quotes can be submitted.
+   * The status is controlled by the backend.
+   */
+  async submit({ auth, params, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    const quote = await Quote.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .first()
+
+    if (!quote) {
+      return response.notFound({
+        message: 'Quote not found',
+      })
+    }
+
+    if (!['draft', 'rejected'].includes(quote.status)) {
+      return response.unprocessableEntity({
+        message: 'Only draft or rejected quotes can be submitted',
+      })
+    }
+
+    quote.status = 'in_review'
+
+    await quote.save()
+
+    return {
+      data: quote,
+    }
+  }
 }
