@@ -7,6 +7,7 @@ export const Signup: React.FC = () => {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [passwordConfirmation, setPasswordConfirmation] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -19,7 +20,7 @@ export const Signup: React.FC = () => {
     setIsLoading(true)
 
     try {
-      await authApi.signup({ fullName, email, password })
+      await authApi.signup({ fullName, email, password, passwordConfirmation })
       setSuccess(true)
       setTimeout(() => {
         navigate('/login')
@@ -130,7 +131,7 @@ export const Signup: React.FC = () => {
               />
             </div>
 
-            <div className="form-group" style={{ marginBottom: 24 }}>
+            <div className="form-group">
               <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Lock size={13} color="var(--primary)" />
                 <span>Password (min 8 chars, 1 number, 1 symbol)</span>
@@ -146,9 +147,25 @@ export const Signup: React.FC = () => {
               />
             </div>
 
+            <div className="form-group" style={{ marginBottom: 24 }}>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Lock size={13} color="var(--primary)" />
+                <span>Confirm Password</span>
+              </label>
+              <input
+                type="password"
+                required
+                minLength={8}
+                className="form-input"
+                placeholder="Re-enter your password"
+                value={passwordConfirmation}
+                onChange={(e) => setPasswordConfirmation(e.target.value)}
+              />
+            </div>
+
             <button
               type="submit"
-              disabled={isLoading || success}
+              disabled={isLoading || success || password !== passwordConfirmation}
               className="btn btn-primary"
               style={{ width: '100%', padding: '12px' }}
             >
