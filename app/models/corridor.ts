@@ -1,5 +1,7 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { BaseModel, column, manyToMany } from '@adonisjs/lucid/orm'
+import type { ManyToMany } from '@adonisjs/lucid/types/relations'
+import Quote from '#models/quote'
 
 export default class Corridor extends BaseModel {
   @column({ isPrimary: true })
@@ -70,4 +72,11 @@ export default class Corridor extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+
+  @manyToMany(() => Quote, {
+    pivotTable: 'quote_corridors',
+    pivotForeignKey: 'corridor_id',
+    pivotRelatedForeignKey: 'quote_id',
+  })
+  declare quotes: ManyToMany<typeof Quote>
 }

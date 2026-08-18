@@ -9,34 +9,26 @@ export interface CorridorCalculations {
 
 export default class CorridorCalculationService {
   static calculate(corridor: Corridor): CorridorCalculations {
+    const yearlyVolumeUsd = 100000
     const atvUsd = Number(corridor.atvUsd) || 0
 
-    const fixedRevenue = Number(corridor.stdFixedFeeUsd) || 0
-
-    const variableRevenue =
-      atvUsd * ((Number(corridor.variableFeePercentage) || 0) / 100)
-
-    const fxRevenue =
-      atvUsd * ((Number(corridor.defaultFxSpread) || 0) / 100)
-
-    const revenue = fixedRevenue + variableRevenue + fxRevenue
+    const yearlyTrx = atvUsd > 0 ? Math.ceil(yearlyVolumeUsd / atvUsd) : 0
+    const revenue =
+      Number(corridor.stdFixedFeeUsd) * yearlyTrx +
+      Number(corridor.variableFeePercentage) * yearlyVolumeUsd
 
     const fixedCost =
-      atvUsd * (Number(corridor.costFixedPerUsd) || 0)
+      yearlyVolumeUsd * (Number(corridor.costFixedPerUsd) || 0)
 
-    const variableCost = Number(corridor.costVariablePerTrx) || 0
+    const variableCost =
+      Number(corridor.costVariablePerTrx) * yearlyTrx
 
     const treasuryFxCost =
-      atvUsd * ((Number(corridor.treasuryFxCost) || 0) / 100)
+      yearlyVolumeUsd * (Number(corridor.treasuryFxCost) || 0)
 
     const cost = fixedCost + variableCost + treasuryFxCost
-
     const margin = revenue - cost
-
-    const marginPercent =
-      revenue === 0
-        ? 0
-        : (margin / revenue) * 100
+    const marginPercent = revenue === 0 ? 0 : (margin / revenue) * 100
 
     return {
       revenue: Number(revenue.toFixed(6)),

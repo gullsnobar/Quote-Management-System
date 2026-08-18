@@ -83,23 +83,48 @@ export class CorridorSchema extends BaseModel {
   declare versionId: number
 }
 
-export class QuoteSchema extends BaseModel {
-  static $columns = ['createdAt', 'id', 'name', 'partnerName', 'status', 'updatedAt', 'userId'] as const
-  $columns = QuoteSchema.$columns
+export class QuoteCorridorSchema extends BaseModel {
+  static $columns = ['corridorId', 'createdAt', 'id', 'quoteId', 'updatedAt'] as const
+  $columns = QuoteCorridorSchema.$columns
+  @column()
+  declare corridorId: number
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column({ isPrimary: true })
   declare id: number
+  @column()
+  declare quoteId: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class QuoteSchema extends BaseModel {
+  static $columns = ['contractLength', 'createdAt', 'id', 'monthlyRevenue', 'name', 'partnerName', 'status', 'tcv', 'totalRevenue', 'updatedAt', 'userId', 'version'] as const
+  $columns = QuoteSchema.$columns
+  @column()
+  declare contractLength: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare monthlyRevenue: string
   @column()
   declare name: string
   @column()
   declare partnerName: string
   @column()
   declare status: string
+  @column()
+  declare tcv: string
+  @column()
+  declare totalRevenue: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
   @column()
   declare userId: number
+  @column()
+  declare version: number
 }
 
 export class UserSchema extends BaseModel {

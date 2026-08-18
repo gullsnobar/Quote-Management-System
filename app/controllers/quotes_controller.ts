@@ -1,5 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Quote from '#models/quote'
+import QuoteCalculationService from '#services/quote_calculation_service'
 import {
   createQuoteValidator,
   updateQuoteValidator,
@@ -34,7 +35,13 @@ export default class QuotesController {
     const quotes = await query
 
     return {
-      data: quotes,
+      data: quotes.map((quote) => ({
+        ...quote.serialize(),
+        ...QuoteCalculationService.calculateForQuote({
+          corridors: quote.$preloaded.corridors ?? [],
+          contractLength: quote.contractLength ?? 1,
+        }),
+      })),
     }
   }
 
@@ -50,8 +57,11 @@ export default class QuotesController {
       userId: user.id,
       name: payload.name,
       partnerName: payload.partnerName,
-
-      // Status is controlled by the backend.
+      contractLength: payload.contractLength ?? 1,
+      totalRevenue: 0,
+      monthlyRevenue: 0,
+      tcv: 0,
+      version: 1,
       status: 'draft',
     })
 
@@ -69,6 +79,7 @@ export default class QuotesController {
     const quote = await Quote.query()
       .where('id', params.id)
       .where('user_id', user.id)
+      .preload('corridors')
       .first()
 
     if (!quote) {
@@ -77,8 +88,16 @@ export default class QuotesController {
       })
     }
 
+    const summary = QuoteCalculationService.calculateForQuote({
+      corridors: quote.corridors,
+      contractLength: quote.contractLength ?? 1,
+    })
+
     return {
-      data: quote,
+      data: {
+        ...quote.serialize(),
+        ...summary,
+      },
     }
   }
 
@@ -93,6 +112,7 @@ export default class QuotesController {
     const quote = await Quote.query()
       .where('id', params.id)
       .where('user_id', user.id)
+      .preload('corridors')
       .first()
 
     if (!quote) {
@@ -108,16 +128,30 @@ export default class QuotesController {
     }
 
     const payload = await request.validateUsing(updateQuoteValidator)
+    const contractLength = payload.contractLength ?? quote.contractLength ?? 1
+
+    const summary = QuoteCalculationService.calculateForQuote({
+      corridors: quote.corridors,
+      contractLength,
+    })
 
     quote.merge({
       name: payload.name,
       partnerName: payload.partnerName,
+      contractLength,
+      totalRevenue: summary.totalRevenue,
+      monthlyRevenue: summary.monthlyRevenue,
+      tcv: summary.tcv,
+      version: (quote.version ?? 0) + 1,
     })
 
     await quote.save()
 
     return {
-      data: quote,
+      data: {
+        ...quote.serialize(),
+        ...summary,
+      },
     }
   }
 
@@ -157,6 +191,7 @@ export default class QuotesController {
     const quote = await Quote.query()
       .where('id', params.id)
       .where('user_id', user.id)
+      .preload('corridors')
       .first()
 
     if (!quote) {
@@ -171,12 +206,25 @@ export default class QuotesController {
       })
     }
 
-    quote.status = 'in_review'
+    const summary = QuoteCalculationService.calculateForQuote({
+      corridors: quote.corridors,
+      contractLength: quote.contractLength ?? 1,
+    })
+
+    quote.merge({
+      totalRevenue: summary.totalRevenue,
+      monthlyRevenue: summary.monthlyRevenue,
+      tcv: summary.tcv,
+      status: 'in_review',
+    })
 
     await quote.save()
 
     return {
-      data: quote,
+      data: {
+        ...quote.serialize(),
+        ...summary,
+      },
     }
   }
 }
