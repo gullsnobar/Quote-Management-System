@@ -7,10 +7,8 @@ export interface User {
 }
 
 export interface AuthResponse {
-  data: {
-    token: string
-    user: User
-  }
+  token: string
+  user: User
 }
 
 export interface LoginPayload {

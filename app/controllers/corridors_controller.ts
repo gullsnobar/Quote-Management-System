@@ -55,7 +55,6 @@ export default class CorridorsController {
     }
 
     const corridors = await query
-
     const data = corridors.map((corridor) => ({
       ...corridor.serialize(),
       calculations: CorridorCalculationService.calculate(corridor),

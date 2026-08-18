@@ -6,6 +6,7 @@ export interface Quote {
   name: string
   partnerName: string
   status: QuoteStatus
+  version: number
   createdAt: string
   updatedAt: string
 }
@@ -18,4 +19,5 @@ export interface CreateQuotePayload {
 export interface UpdateQuotePayload {
   name: string
   partnerName: string
+  version: number
 }

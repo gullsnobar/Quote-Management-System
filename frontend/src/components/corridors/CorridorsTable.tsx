@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useRef } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import type { Corridor } from '../../types/corridor'
 import { TrendingUp, TrendingDown, AlertCircle } from 'lucide-react'
 
@@ -7,7 +8,17 @@ interface CorridorsTableProps {
   isLoading: boolean
 }
 
+const columnTemplate = '70px minmax(180px, 1.5fr) minmax(180px, 1.4fr) minmax(260px, 2.3fr) 90px 170px 150px 150px 150px 110px'
+
 export const CorridorsTable: React.FC<CorridorsTableProps> = ({ corridors, isLoading }) => {
+  const scrollRef = useRef<HTMLDivElement | null>(null)
+  const rowVirtualizer = useVirtualizer({
+    count: corridors.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => 52,
+    overscan: 8,
+  })
+
   if (isLoading) {
     return (
       <div className="glass-panel" style={{ padding: '60px', textAlign: 'center' }}>
@@ -51,63 +62,99 @@ export const CorridorsTable: React.FC<CorridorsTableProps> = ({ corridors, isLoa
     )
   }
 
+  const virtualRows = rowVirtualizer.getVirtualItems()
+
   return (
     <div className="glass-panel" style={{ overflow: 'hidden' }}>
-      <div style={{ maxHeight: '720px', overflowY: 'auto', overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
-          <thead>
-            <tr style={{
-              background: '#0b1120',
-              borderBottom: '2px solid var(--border-medium)',
+      <div
+        ref={scrollRef}
+        style={{
+          maxHeight: '720px',
+          overflowY: 'auto',
+          overflowX: 'auto',
+        }}
+      >
+        <div style={{ minWidth: '1200px', width: '100%' }}>
+          <div
+            style={{
               position: 'sticky',
               top: 0,
               zIndex: 10,
-            }}>
-              <th style={{ padding: '14px 16px', color: 'var(--text-muted)', fontWeight: 600, width: 70 }}># ID</th>
-              <th style={{ padding: '14px 16px', color: 'var(--text-muted)', fontWeight: 600 }}>Region / Country</th>
-              <th style={{ padding: '14px 16px', color: 'var(--text-muted)', fontWeight: 600 }}>Type & Service</th>
-              <th style={{ padding: '14px 16px', color: 'var(--text-muted)', fontWeight: 600 }}>Receiving Partner & Payer</th>
-              <th style={{ padding: '14px 16px', color: 'var(--text-muted)', fontWeight: 600, textAlign: 'right' }}>Payout Ccy</th>
-              <th style={{ padding: '14px 16px', color: 'var(--text-muted)', fontWeight: 600, textAlign: 'right' }}>ATV (USD)</th>
-              <th style={{ padding: '14px 16px', color: 'var(--cyan)', fontWeight: 700, textAlign: 'right', background: 'rgba(6, 182, 212, 0.05)' }}>Revenue ($)</th>
-              <th style={{ padding: '14px 16px', color: '#f87171', fontWeight: 700, textAlign: 'right', background: 'rgba(239, 68, 68, 0.05)' }}>Cost ($)</th>
-              <th style={{ padding: '14px 16px', color: 'var(--text-main)', fontWeight: 700, textAlign: 'right', background: 'rgba(99, 102, 241, 0.05)' }}>Margin ($)</th>
-              <th style={{ padding: '14px 16px', color: 'var(--text-main)', fontWeight: 700, textAlign: 'right', background: 'rgba(99, 102, 241, 0.05)' }}>Margin %</th>
-            </tr>
-          </thead>
-          <tbody>
-            {corridors.map((c, index) => {
+              display: 'grid',
+              gridTemplateColumns: columnTemplate,
+              background: '#0b1120',
+              borderBottom: '2px solid var(--border-medium)',
+              lineHeight: 1.2,
+            }}
+          >
+            {[
+              '# ID',
+              'Region / Country',
+              'Type & Service',
+              'Receiving Partner & Payer',
+              'Payout Ccy',
+              'ATV (USD)',
+              'Revenue ($)',
+              'Cost ($)',
+              'Margin ($)',
+              'Margin %',
+            ].map((header, index) => (
+              <div
+                key={header}
+                style={{
+                  padding: '14px 16px',
+                  color: index === 6 ? 'var(--cyan)' : index === 7 ? '#f87171' : 'var(--text-muted)',
+                  fontWeight: index >= 6 ? 700 : 600,
+                  background: index >= 6 ? (index === 6 ? 'rgba(6, 182, 212, 0.05)' : index === 7 ? 'rgba(239, 68, 68, 0.05)' : 'rgba(99, 102, 241, 0.05)') : 'transparent',
+                  textAlign: index >= 4 ? 'right' : 'left',
+                }}
+              >
+                {header}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative' }}>
+            {virtualRows.map((virtualRow) => {
+              const c = corridors[virtualRow.index]
               const calc = c.calculations
               const isMarginPositive = calc ? calc.margin >= 0 : false
+              const rowIndex = virtualRow.index
 
               return (
-                <tr
+                <div
                   key={c.id}
+                  data-index={virtualRow.index}
+                  ref={rowVirtualizer.measureElement}
                   style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    transform: `translateY(${virtualRow.start}px)`,
+                    display: 'grid',
+                    gridTemplateColumns: columnTemplate,
                     borderBottom: '1px solid var(--border-subtle)',
-                    backgroundColor: index % 2 === 0 ? 'transparent' : 'rgba(30, 41, 59, 0.25)',
+                    backgroundColor: rowIndex % 2 === 0 ? 'transparent' : 'rgba(30, 41, 59, 0.25)',
                     transition: 'background-color 0.15s ease',
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(51, 65, 85, 0.4)')}
                   onMouseLeave={(e) =>
                     (e.currentTarget.style.backgroundColor =
-                      index % 2 === 0 ? 'transparent' : 'rgba(30, 41, 59, 0.25)')
+                      rowIndex % 2 === 0 ? 'transparent' : 'rgba(30, 41, 59, 0.25)')
                   }
                 >
-                  {/* ID */}
-                  <td style={{ padding: '12px 16px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
+                  <div style={{ padding: '12px 16px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
                     {c.corridorId || c.id}
-                  </td>
+                  </div>
 
-                  {/* Region & Country */}
-                  <td style={{ padding: '12px 16px' }}>
+                  <div style={{ padding: '12px 16px' }}>
                     <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{c.country}</div>
                     <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>{c.region}</div>
-                  </td>
+                  </div>
 
-                  {/* Type & Service */}
-                  <td style={{ padding: '12px 16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ padding: '12px 16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                       <span style={{
                         padding: '2px 6px',
                         background: 'var(--purple-light)',
@@ -120,30 +167,26 @@ export const CorridorsTable: React.FC<CorridorsTableProps> = ({ corridors, isLoa
                       </span>
                       <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>{c.service}</span>
                     </div>
-                  </td>
+                  </div>
 
-                  {/* Partner & Payer */}
-                  <td style={{ padding: '12px 16px', maxWidth: '280px' }}>
+                  <div style={{ padding: '12px 16px', minWidth: 0 }}>
                     <div style={{ fontWeight: 500, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {c.receivingPartner}
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text-dim)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {c.payer}
                     </div>
-                  </td>
+                  </div>
 
-                  {/* Payout Currency */}
-                  <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: 'var(--text-muted)' }}>
+                  <div style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: 'var(--text-muted)' }}>
                     {c.payoutCurrency}
-                  </td>
+                  </div>
 
-                  {/* ATV USD */}
-                  <td style={{ padding: '12px 16px', textAlign: 'right', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+                  <div style={{ padding: '12px 16px', textAlign: 'right', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
                     ${Number(c.atvUsd).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </td>
+                  </div>
 
-                  {/* Backend Calculated Revenue */}
-                  <td style={{
+                  <div style={{
                     padding: '12px 16px',
                     textAlign: 'right',
                     fontFamily: 'var(--font-mono)',
@@ -152,10 +195,9 @@ export const CorridorsTable: React.FC<CorridorsTableProps> = ({ corridors, isLoa
                     background: 'rgba(6, 182, 212, 0.02)',
                   }}>
                     ${calc ? calc.revenue.toFixed(2) : '-'}
-                  </td>
+                  </div>
 
-                  {/* Backend Calculated Cost */}
-                  <td style={{
+                  <div style={{
                     padding: '12px 16px',
                     textAlign: 'right',
                     fontFamily: 'var(--font-mono)',
@@ -164,10 +206,9 @@ export const CorridorsTable: React.FC<CorridorsTableProps> = ({ corridors, isLoa
                     background: 'rgba(239, 68, 68, 0.02)',
                   }}>
                     ${calc ? calc.cost.toFixed(2) : '-'}
-                  </td>
+                  </div>
 
-                  {/* Backend Calculated Margin */}
-                  <td style={{
+                  <div style={{
                     padding: '12px 16px',
                     textAlign: 'right',
                     fontFamily: 'var(--font-mono)',
@@ -179,10 +220,9 @@ export const CorridorsTable: React.FC<CorridorsTableProps> = ({ corridors, isLoa
                       {isMarginPositive ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
                       ${calc ? calc.margin.toFixed(2) : '-'}
                     </span>
-                  </td>
+                  </div>
 
-                  {/* Backend Calculated Margin % */}
-                  <td style={{
+                  <div style={{
                     padding: '12px 16px',
                     textAlign: 'right',
                     fontFamily: 'var(--font-mono)',
@@ -191,12 +231,12 @@ export const CorridorsTable: React.FC<CorridorsTableProps> = ({ corridors, isLoa
                     background: 'rgba(99, 102, 241, 0.02)',
                   }}>
                     {calc ? `${calc.marginPercent.toFixed(1)}%` : '-'}
-                  </td>
-                </tr>
+                  </div>
+                </div>
               )
             })}
-          </tbody>
-        </table>
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -20,7 +20,7 @@ export const Login: React.FC = () => {
 
     try {
       const response = await authApi.login({ email, password })
-      login(response.data.token, response.data.user)
+      login(response.token, response.user)
       navigate('/')
     } catch (err: any) {
       setError(err.response?.data?.message || err.response?.data?.errors?.[0]?.message || 'Invalid credentials')

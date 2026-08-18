@@ -3,18 +3,18 @@ import type { AuthResponse, LoginPayload, SignupPayload, User } from '../types/a
 
 export const authApi = {
   async login(payload: LoginPayload): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>('/auth/login', payload)
-    return response.data
+    const response = await api.post<{ data: AuthResponse }>('/auth/login', payload)
+    return response.data.data
   },
 
-  async signup(payload: SignupPayload): Promise<{ data: User }> {
-    const response = await api.post<{ data: User }>('/auth/signup', payload)
-    return response.data
+  async signup(payload: SignupPayload): Promise<AuthResponse> {
+    const response = await api.post<{ data: AuthResponse }>('/auth/signup', payload)
+    return response.data.data
   },
 
-  async getProfile(): Promise<{ data: User }> {
+  async getProfile(): Promise<User> {
     const response = await api.get<{ data: User }>('/account/profile')
-    return response.data
+    return response.data.data
   },
 
   async logout(): Promise<{ message: string }> {

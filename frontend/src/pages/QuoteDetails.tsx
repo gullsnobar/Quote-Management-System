@@ -30,6 +30,7 @@ export const QuoteDetails: React.FC = () => {
   const [quote, setQuote] = useState<Quote | null>(null)
   const [isQuoteLoading, setIsQuoteLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'corridors'>('corridors')
+  const [isConflict, setIsConflict] = useState(false)
 
   // Edit Mode State (AC-3)
   const [isEditing, setIsEditing] = useState(false)
@@ -50,6 +51,7 @@ export const QuoteDetails: React.FC = () => {
     if (!id) return
     try {
       setIsQuoteLoading(true)
+      setIsConflict(false)
       const res = await quotesApi.getQuote(id)
       setQuote(res.data)
       setEditName(res.data.name)
@@ -96,12 +98,23 @@ export const QuoteDetails: React.FC = () => {
       const res = await quotesApi.updateQuote(id, {
         name: editName,
         partnerName: editPartner,
+        version: quote.version,
       })
       setQuote(res.data)
       setIsEditing(false)
+      setIsConflict(false)
       setNotification({ type: 'success', message: 'Quote updated successfully!' })
       setTimeout(() => setNotification(null), 3000)
     } catch (err: any) {
+      if (err.response?.status === 409) {
+        setIsConflict(true)
+        setNotification({
+          type: 'error',
+          message: err.response?.data?.message || 'This quote was modified by another user. Please reload the latest version before saving.',
+        })
+        return
+      }
+
       setNotification({
         type: 'error',
         message: err.response?.data?.message || 'Failed to update quote',
@@ -214,6 +227,31 @@ export const QuoteDetails: React.FC = () => {
           }}>
             {notification.type === 'success' ? <CheckCircle2 size={18} /> : <AlertTriangle size={18} />}
             <span>{notification.message}</span>
+          </div>
+        )}
+
+        {isConflict && (
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 12,
+            alignItems: 'center',
+            marginBottom: 20,
+            padding: '12px 16px',
+            borderRadius: 'var(--radius-md)',
+            background: 'rgba(245, 158, 11, 0.08)',
+            border: '1px solid rgba(245, 158, 11, 0.35)',
+            color: '#fbbf24',
+            fontSize: 14,
+          }}>
+            <span>Another user changed this quote while you were editing it.</span>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => fetchQuote()}
+            >
+              Reload Latest Version
+            </button>
           </div>
         )}
 

@@ -28,8 +28,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (storedToken) {
         try {
           const profile = await authApi.getProfile()
-          setUser(profile.data)
-          localStorage.setItem('user', JSON.stringify(profile.data))
+          setUser(profile)
+          localStorage.setItem('user', JSON.stringify(profile))
         } catch {
           localStorage.removeItem('token')
           localStorage.removeItem('user')

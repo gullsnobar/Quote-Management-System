@@ -128,6 +128,7 @@ export default class QuotesController {
     }
 
     const payload = await request.validateUsing(updateQuoteValidator)
+    const submittedVersion = Number(payload.version ?? quote.version ?? 1)
     const contractLength = payload.contractLength ?? quote.contractLength ?? 1
 
     const summary = QuoteCalculationService.calculateForQuote({
@@ -135,22 +136,41 @@ export default class QuotesController {
       contractLength,
     })
 
-    quote.merge({
-      name: payload.name,
-      partnerName: payload.partnerName,
-      contractLength,
-      totalRevenue: summary.totalRevenue,
-      monthlyRevenue: summary.monthlyRevenue,
-      tcv: summary.tcv,
-      version: (quote.version ?? 0) + 1,
-    })
+    const affectedRows = await Quote.query()
+      .where('id', quote.id)
+      .where('user_id', user.id)
+      .where('version', submittedVersion)
+      .update({
+        name: payload.name,
+        partnerName: payload.partnerName,
+        contractLength,
+        totalRevenue: summary.totalRevenue,
+        monthlyRevenue: summary.monthlyRevenue,
+        tcv: summary.tcv,
+        version: quote.version + 1,
+      })
 
-    await quote.save()
+    if (affectedRows === 0) {
+      return response.conflict({
+        success: false,
+        code: 'QUOTE_CONFLICT',
+        message: 'This quote was modified by another user. Please reload the latest version before saving.',
+      })
+    }
+
+    const updatedQuote = await Quote.query()
+      .where('id', quote.id)
+      .where('user_id', user.id)
+      .preload('corridors')
+      .firstOrFail()
 
     return {
       data: {
-        ...quote.serialize(),
-        ...summary,
+        ...updatedQuote.serialize(),
+        ...QuoteCalculationService.calculateForQuote({
+          corridors: updatedQuote.corridors,
+          contractLength: updatedQuote.contractLength ?? contractLength,
+        }),
       },
     }
   }
