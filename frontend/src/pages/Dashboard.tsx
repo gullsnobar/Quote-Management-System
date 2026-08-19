@@ -4,20 +4,22 @@ import { quotesApi } from '../api/quotesApi'
 import type { Quote, QuoteStatus } from '../types/quote'
 import { Navbar } from '../components/Navbar'
 import { StatusBadge } from '../components/StatusBadge'
-import { 
-  FileText, 
-  PlusCircle, 
-  Search, 
-  Send, 
-  Trash2, 
-  ArrowRight, 
-  Clock, 
-  CheckCircle2, 
-  XCircle, 
-  FileEdit, 
+import {
+  FileText,
+  PlusCircle,
+  Search,
+  Send,
+  Trash2,
+  ArrowRight,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  FileEdit,
   X,
   Building2,
-  Calendar
+  Calendar,
+  AlertCircle,
+  RotateCcw,
 } from 'lucide-react'
 
 export const Dashboard: React.FC = () => {
@@ -25,7 +27,8 @@ export const Dashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('')
-  
+  const [fetchError, setFetchError] = useState<string | null>(null)
+
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [name, setName] = useState('')
@@ -33,9 +36,17 @@ export const Dashboard: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const hasActiveFilters = search !== '' || statusFilter !== ''
+
+  const handleResetFilters = () => {
+    setSearch('')
+    setStatusFilter('')
+  }
+
   const fetchQuotes = async () => {
     try {
       setIsLoading(true)
+      setFetchError(null)
       const res = await quotesApi.getQuotes({
         search: search || undefined,
         status: statusFilter || undefined,
@@ -43,6 +54,10 @@ export const Dashboard: React.FC = () => {
       setQuotes(res.data)
     } catch (err: any) {
       console.error(err)
+      setFetchError(
+        err.response?.data?.message ||
+          'Failed to load quotes. Please try again.'
+      )
     } finally {
       setIsLoading(false)
     }
@@ -148,11 +163,11 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="stat-card">
-            <div className="stat-icon" style={{ background: 'var(--warning-light)', color: '#fbbf24' }}>
+            <div className="stat-icon" style={{ background: 'var(--warning-light)', color: 'var(--text-warning)' }}>
               <FileEdit size={24} />
             </div>
             <div>
-              <div className="stat-value" style={{ color: '#fbbf24' }}>{stats.draft}</div>
+              <div className="stat-value" style={{ color: 'var(--text-warning)' }}>{stats.draft}</div>
               <div className="stat-label">Drafts (Editable)</div>
             </div>
           </div>
@@ -168,21 +183,21 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="stat-card">
-            <div className="stat-icon" style={{ background: 'var(--success-light)', color: '#34d399' }}>
+            <div className="stat-icon" style={{ background: 'var(--success-light)', color: 'var(--text-success)' }}>
               <CheckCircle2 size={24} />
             </div>
             <div>
-              <div className="stat-value" style={{ color: '#34d399' }}>{stats.approved}</div>
+              <div className="stat-value" style={{ color: 'var(--text-success)' }}>{stats.approved}</div>
               <div className="stat-label">Approved</div>
             </div>
           </div>
 
           <div className="stat-card">
-            <div className="stat-icon" style={{ background: 'var(--danger-light)', color: '#f87171' }}>
+            <div className="stat-icon" style={{ background: 'var(--danger-light)', color: 'var(--text-danger)' }}>
               <XCircle size={24} />
             </div>
             <div>
-              <div className="stat-value" style={{ color: '#f87171' }}>{stats.rejected}</div>
+              <div className="stat-value" style={{ color: 'var(--text-danger)' }}>{stats.rejected}</div>
               <div className="stat-label">Rejected (Re-editable)</div>
             </div>
           </div>
@@ -203,8 +218,8 @@ export const Dashboard: React.FC = () => {
             />
           </div>
 
-          {/* Status Tabs */}
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {/* Status Tabs + Reset */}
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
             {[
               { id: '', label: 'All' },
               { id: 'draft', label: 'Draft' },
@@ -220,8 +235,34 @@ export const Dashboard: React.FC = () => {
                 {tab.label}
               </button>
             ))}
+            {hasActiveFilters && (
+              <button
+                onClick={handleResetFilters}
+                className="btn btn-sm btn-secondary"
+                title="Clear search and status filter"
+                style={{ marginLeft: 4 }}
+              >
+                <RotateCcw size={13} />
+                <span>Reset</span>
+              </button>
+            )}
           </div>
         </div>
+
+        {/* Error State */}
+        {fetchError && !isLoading && (
+          <div className="glass-panel" style={{ padding: 24, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 14, background: 'var(--danger-light)', borderColor: 'var(--danger)' }}>
+            <AlertCircle size={22} color="var(--text-danger)" style={{ flexShrink: 0 }} />
+            <div style={{ flex: 1 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-danger)', marginBottom: 2 }}>Failed to load quotes</h3>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>{fetchError}</p>
+            </div>
+            <button onClick={fetchQuotes} className="btn btn-secondary btn-sm">
+              <RotateCcw size={13} />
+              <span>Retry</span>
+            </button>
+          </div>
+        )}
 
         {/* Quotes List */}
         {isLoading ? (
@@ -237,7 +278,7 @@ export const Dashboard: React.FC = () => {
             }} />
             <p style={{ color: 'var(--text-muted)' }}>Loading quotes...</p>
           </div>
-        ) : quotes.length === 0 ? (
+        ) : fetchError ? null : quotes.length === 0 ? (
           <div className="glass-panel" style={{ padding: 60, textAlign: 'center' }}>
             <div style={{
               width: 52,
@@ -254,12 +295,19 @@ export const Dashboard: React.FC = () => {
             </div>
             <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>No Quotes Found</h3>
             <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 20 }}>
-              {search || statusFilter ? 'Try clearing your search or status filter' : 'Create your first commercial quote to start pricing corridors'}
+              {hasActiveFilters ? 'No quotes match your current filters. Try adjusting or clearing them.' : 'Create your first commercial quote to start pricing corridors'}
             </p>
-            <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
-              <PlusCircle size={16} />
-              <span>Create Quote</span>
-            </button>
+            {hasActiveFilters ? (
+              <button onClick={handleResetFilters} className="btn btn-secondary">
+                <RotateCcw size={16} />
+                <span>Clear Filters</span>
+              </button>
+            ) : (
+              <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
+                <PlusCircle size={16} />
+                <span>Create Quote</span>
+              </button>
+            )}
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 20 }}>
@@ -354,7 +402,7 @@ export const Dashboard: React.FC = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'rgba(0, 0, 0, 0.75)',
+          background: 'var(--modal-overlay)',
           backdropFilter: 'blur(8px)',
           display: 'flex',
           alignItems: 'center',
@@ -388,7 +436,7 @@ export const Dashboard: React.FC = () => {
                 padding: '10px 14px',
                 borderRadius: 'var(--radius-md)',
                 background: 'var(--danger-light)',
-                color: '#f87171',
+                color: 'var(--text-danger)',
                 fontSize: 13,
                 marginBottom: 16,
               }}>

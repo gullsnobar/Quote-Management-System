@@ -41,7 +41,28 @@ export const plugins: Config['plugins'] = [
  * The teardown functions are executed after all the tests
  */
 export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
-  setup: [],
+  setup: [
+    /**
+     * SAFETY GUARD: tests delete rows from users/quotes/corridors tables.
+     * Refuse to run unless the configured database is a dedicated test
+     * database (name must end with "_test"). This prevents the test suite
+     * from wiping development or production data.
+     */
+    () => {
+      const dbName = process.env.DB_DATABASE ?? ''
+      if (!dbName.endsWith('_test')) {
+        throw new Error(
+          `Refusing to run tests against database "${dbName}". ` +
+            'Tests truncate tables and must only run against a dedicated test database ' +
+            '(name ending in "_test"). Set DB_DATABASE in .env.test, e.g. "quote_management_test".'
+        )
+      }
+    },
+    /**
+     * Run migrations on the test database so the schema is always current.
+     */
+    () => testUtils.db().migrate(),
+  ],
   teardown: [],
 }
 

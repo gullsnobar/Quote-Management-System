@@ -4,7 +4,7 @@
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Color Palette - Refined Financial Dark Theme */
+  /* Color Palette - Refined Financial Dark Theme (default) */
   --bg-app: #090d16;
   --bg-surface: #0f172a;
   --bg-surface-elevated: #1e293b;
@@ -50,6 +50,36 @@
   --purple-light: rgba(168, 85, 247, 0.15);
   --purple-border: rgba(168, 85, 247, 0.3);
 
+  /* Semantic text colors for badges/status (theme-aware) */
+  --text-success: #34d399;
+  --text-danger: #f87171;
+  --text-warning: #fbbf24;
+  --text-purple: #c084fc;
+  --text-cyan: #22d3ee;
+
+  /* Navbar */
+  --navbar-bg: rgba(15, 23, 42, 0.85);
+  --navbar-user-bg: rgba(30, 41, 59, 0.6);
+
+  /* Table */
+  --table-header-bg: #0b1120;
+  --table-row-alt-bg: rgba(30, 41, 59, 0.25);
+  --table-row-hover-bg: rgba(51, 65, 85, 0.4);
+
+  /* Modal */
+  --modal-overlay: rgba(0, 0, 0, 0.75);
+
+  /* Conflict banner */
+  --conflict-bg: rgba(245, 158, 11, 0.08);
+  --conflict-border: rgba(245, 158, 11, 0.35);
+  --conflict-text: #fbbf24;
+
+  /* Locked badge */
+  --locked-bg: rgba(148, 163, 184, 0.1);
+
+  /* Tab count badge */
+  --tab-count-bg: rgba(255, 255, 255, 0.2);
+
   /* Radius */
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -62,6 +92,100 @@
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
   --shadow-glow: 0 0 30px -5px rgba(99, 102, 241, 0.25);
+
+  /* Focus ring */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* ============================================================
+   LIGHT THEME
+   Override all color variables for a clean, light SaaS look.
+   Activated via [data-theme="light"] on the <html> element.
+   ============================================================ */
+[data-theme='light'] {
+  --bg-app: #f1f5f9;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f8fafc;
+  --bg-surface-glass: rgba(255, 255, 255, 0.85);
+  --bg-card: rgba(255, 255, 255, 0.9);
+  --bg-card-hover: rgba(241, 245, 249, 0.95);
+  --bg-input: #ffffff;
+
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --border-medium: rgba(15, 23, 42, 0.14);
+  --border-glow: rgba(99, 102, 241, 0.4);
+
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-dim: #94a3b8;
+
+  /* Brand Accents - slightly darker for light-bg contrast */
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --primary-light: rgba(79, 70, 229, 0.1);
+  --primary-glow: 0 0 24px rgba(79, 70, 229, 0.2);
+
+  --cyan: #0891b2;
+  --cyan-light: rgba(8, 145, 178, 0.1);
+
+  --success: #059669;
+  --success-light: rgba(5, 150, 105, 0.1);
+  --success-border: rgba(5, 150, 105, 0.25);
+
+  --warning: #d97706;
+  --warning-light: rgba(217, 119, 6, 0.1);
+  --warning-border: rgba(217, 119, 6, 0.25);
+
+  --danger: #dc2626;
+  --danger-light: rgba(220, 38, 38, 0.08);
+  --danger-border: rgba(220, 38, 38, 0.25);
+
+  --info: #2563eb;
+  --info-light: rgba(37, 99, 235, 0.1);
+  --info-border: rgba(37, 99, 235, 0.25);
+
+  --purple: #9333ea;
+  --purple-light: rgba(147, 51, 234, 0.1);
+  --purple-border: rgba(147, 51, 234, 0.25);
+
+  /* Semantic text colors for badges/status (light mode) */
+  --text-success: #059669;
+  --text-danger: #dc2626;
+  --text-warning: #d97706;
+  --text-purple: #9333ea;
+  --text-cyan: #0891b2;
+
+  /* Navbar */
+  --navbar-bg: rgba(255, 255, 255, 0.9);
+  --navbar-user-bg: rgba(241, 245, 249, 0.8);
+
+  /* Table */
+  --table-header-bg: #f8fafc;
+  --table-row-alt-bg: rgba(241, 245, 249, 0.6);
+  --table-row-hover-bg: rgba(226, 232, 240, 0.7);
+
+  /* Modal */
+  --modal-overlay: rgba(15, 23, 42, 0.5);
+
+  /* Conflict banner */
+  --conflict-bg: rgba(217, 119, 6, 0.08);
+  --conflict-border: rgba(217, 119, 6, 0.3);
+  --conflict-text: #d97706;
+
+  /* Locked badge */
+  --locked-bg: rgba(148, 163, 184, 0.15);
+
+  /* Tab count badge */
+  --tab-count-bg: rgba(255, 255, 255, 0.25);
+
+  /* Shadows - lighter for light mode */
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.1), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.12), 0 4px 6px -4px rgba(15, 23, 42, 0.08);
+  --shadow-glow: 0 0 30px -5px rgba(79, 70, 229, 0.15);
+
+  /* Focus ring */
+  --focus-ring: 0 0 0 3px rgba(79, 70, 229, 0.15);
 }
 
 * {
@@ -77,10 +201,17 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-image: 
+  background-image:
     radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
     radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.06) 0px, transparent 50%);
   background-attachment: fixed;
+}
+
+/* Light mode: subtle, warmer background */
+[data-theme='light'] body {
+  background-image:
+    radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.04) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(8, 145, 178, 0.03) 0px, transparent 50%);
 }
 
 /* Typography */
@@ -164,13 +295,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-secondary {
-  background: rgba(30, 41, 59, 0.8);
+  background: var(--bg-surface-elevated);
   color: var(--text-main);
   border: 1px solid var(--border-medium);
 }
 
 .btn-secondary:hover {
-  background: rgba(51, 65, 85, 0.9);
+  background: var(--bg-card-hover);
   border-color: var(--text-muted);
 }
 
@@ -209,6 +340,16 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: none !important;
 }
 
+/* Keyboard accessibility: visible focus ring */
+.btn:focus-visible,
+.form-input:focus-visible,
+.form-select:focus-visible,
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 /* Form Inputs */
 .form-group {
   display: flex;
@@ -238,7 +379,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .form-input:focus, .form-select:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  box-shadow: var(--focus-ring);
 }
 
 .form-input::placeholder {
@@ -260,25 +401,25 @@ h1, h2, h3, h4, h5, h6 {
 
 .badge-draft {
   background: var(--warning-light);
-  color: #fbbf24;
+  color: var(--text-warning);
   border: 1px solid var(--warning-border);
 }
 
 .badge-in_review {
   background: var(--purple-light);
-  color: #c084fc;
+  color: var(--text-purple);
   border: 1px solid var(--purple-border);
 }
 
 .badge-approved {
   background: var(--success-light);
-  color: #34d399;
+  color: var(--text-success);
   border: 1px solid var(--success-border);
 }
 
 .badge-rejected {
   background: var(--danger-light);
-  color: #f87171;
+  color: var(--text-danger);
   border: 1px solid var(--danger-border);
 }
 
@@ -337,4 +478,15 @@ h1, h2, h3, h4, h5, h6 {
 
 .animate-pulse-glow {
   animation: pulseGlow 2s infinite ease-in-out;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Select dropdown styling - ensure options match theme in supported browsers */
+.form-select option {
+  background: var(--bg-surface);
+  color: var(--text-main);
 }

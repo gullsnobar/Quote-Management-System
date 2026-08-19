@@ -1,57 +1,47 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Corridor from '#models/corridor'
 import CorridorCalculationService from '#services/corridor_calculation_service'
+import { listCorridorsValidator } from '#validators/quote'
 
 export default class CorridorsController {
   /**
-   * List corridors with optional filters and attached calculations.
+   * List the global corridor catalog with optional filters and attached
+   * backend calculations (AC-4, AC-5, AC-6).
    *
-   * Supported filters:
-   * region
-   * country
-   * transactionType
-   * service
-   * payoutCurrency
-   * receivingPartner
-   * payer
+   * All filters are validated via listCorridorsValidator (AC-7) and applied
+   * in PostgreSQL via the Lucid query builder (parameterized — no raw SQL).
    */
   async index({ request, response }: HttpContext) {
+    const payload = await request.validateUsing(listCorridorsValidator)
+
     const query = Corridor.query().orderBy('id', 'asc')
 
-    const region = request.input('region')
-    const country = request.input('country')
-    const transactionType = request.input('transactionType')
-    const service = request.input('service')
-    const payoutCurrency = request.input('payoutCurrency')
-    const receivingPartner = request.input('receivingPartner')
-    const payer = request.input('payer')
-
-    if (region) {
-      query.where('region', region)
+    if (payload.region) {
+      query.where('region', payload.region)
     }
 
-    if (country) {
-      query.where('country', country)
+    if (payload.country) {
+      query.whereILike('country', `%${payload.country}%`)
     }
 
-    if (transactionType) {
-      query.where('transaction_type', transactionType)
+    if (payload.transactionType) {
+      query.where('transaction_type', payload.transactionType)
     }
 
-    if (service) {
-      query.where('service', service)
+    if (payload.service) {
+      query.where('service', payload.service)
     }
 
-    if (payoutCurrency) {
-      query.where('payout_currency', payoutCurrency)
+    if (payload.payoutCurrency) {
+      query.whereILike('payout_currency', `%${payload.payoutCurrency}%`)
     }
 
-    if (receivingPartner) {
-      query.whereILike('receiving_partner', `%${receivingPartner}%`)
+    if (payload.receivingPartner) {
+      query.whereILike('receiving_partner', `%${payload.receivingPartner}%`)
     }
 
-    if (payer) {
-      query.whereILike('payer', `%${payer}%`)
+    if (payload.payer) {
+      query.whereILike('payer', `%${payload.payer}%`)
     }
 
     const corridors = await query

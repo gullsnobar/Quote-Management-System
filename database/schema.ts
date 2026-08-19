@@ -83,6 +83,23 @@ export class CorridorSchema extends BaseModel {
   declare versionId: number
 }
 
+export class QuoteAuditLogSchema extends BaseModel {
+  static $columns = ['action', 'createdAt', 'id', 'metadata', 'quoteId', 'userId'] as const
+  $columns = QuoteAuditLogSchema.$columns
+  @column()
+  declare action: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare metadata: any | null
+  @column()
+  declare quoteId: number
+  @column()
+  declare userId: number
+}
+
 export class QuoteCorridorSchema extends BaseModel {
   static $columns = ['corridorId', 'createdAt', 'id', 'quoteId', 'updatedAt'] as const
   $columns = QuoteCorridorSchema.$columns

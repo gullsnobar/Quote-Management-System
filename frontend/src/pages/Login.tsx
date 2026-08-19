@@ -73,7 +73,7 @@ export const Login: React.FC = () => {
               borderRadius: 'var(--radius-md)',
               background: 'var(--danger-light)',
               border: '1px solid var(--danger-border)',
-              color: '#f87171',
+              color: 'var(--text-danger)',
               fontSize: 13,
               marginBottom: 20,
             }}>

@@ -45,6 +45,14 @@ router
         router.delete('quotes/:id', [controllers.Quotes, 'destroy'])
         router.post('quotes/:id/submit', [controllers.Quotes, 'submit'])
 
+        // Quote ↔ Corridor management (AC-4)
+        router.get('quotes/:id/corridors', [controllers.Quotes, 'corridors'])
+        router.post('quotes/:id/corridors/attach', [controllers.Quotes, 'attachCorridors'])
+        router.post('quotes/:id/corridors/detach', [controllers.Quotes, 'detachCorridors'])
+
+        // Quote audit trail (AC-11)
+        router.get('quotes/:id/audit', [controllers.Quotes, 'auditTrail'])
+
         // Corridors
         router.get('corridors', [controllers.Corridors, 'index'])
         router.get('corridors/:id', [controllers.Corridors, 'show'])

@@ -1,24 +1,30 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Quote from '#models/quote'
+import Corridor from '#models/corridor'
 import QuoteCalculationService from '#services/quote_calculation_service'
+import CorridorCalculationService from '#services/corridor_calculation_service'
+import AuditLogService from '#services/audit_log_service'
 import {
+  attachCorridorsValidator,
   createQuoteValidator,
+  listQuotesValidator,
   updateQuoteValidator,
 } from '#validators/quote'
 
 export default class QuotesController {
   /**
-   * List authenticated user's quotes.
+   * List authenticated user's quotes with optional status filter and text search.
+   *
+   * Filtering and searching are performed in PostgreSQL via the Lucid query
+   * builder (parameterized). Results are always scoped to the authenticated
+   * user's own quotes.
    */
   async index({ auth, request }: HttpContext) {
     const user = auth.getUserOrFail()
 
-    const query = Quote.query()
-      .where('user_id', user.id)
-      .orderBy('created_at', 'desc')
+    const { status, search } = await request.validateUsing(listQuotesValidator)
 
-    const status = request.input('status')
-    const search = request.input('search')
+    const query = Quote.query().where('user_id', user.id).orderBy('created_at', 'desc')
 
     if (status) {
       query.where('status', status)
@@ -26,9 +32,7 @@ export default class QuotesController {
 
     if (search) {
       query.where((builder) => {
-        builder
-          .whereILike('name', `%${search}%`)
-          .orWhereILike('partner_name', `%${search}%`)
+        builder.whereILike('name', `%${search}%`).orWhereILike('partner_name', `%${search}%`)
       })
     }
 
@@ -63,6 +67,13 @@ export default class QuotesController {
       tcv: 0,
       version: 1,
       status: 'draft',
+    })
+
+    await AuditLogService.record({
+      quoteId: quote.id,
+      userId: user.id,
+      action: AuditLogService.ACTIONS.QUOTE_CREATED,
+      metadata: { name: payload.name, partnerName: payload.partnerName },
     })
 
     return response.created({
@@ -136,7 +147,7 @@ export default class QuotesController {
       contractLength,
     })
 
-    const affectedRows = await Quote.query()
+    const affectedRows = (await Quote.query()
       .where('id', quote.id)
       .where('user_id', user.id)
       .where('version', submittedVersion)
@@ -148,13 +159,14 @@ export default class QuotesController {
         monthlyRevenue: summary.monthlyRevenue,
         tcv: summary.tcv,
         version: quote.version + 1,
-      })
+      })) as unknown as number
 
     if (affectedRows === 0) {
       return response.conflict({
         success: false,
         code: 'QUOTE_CONFLICT',
-        message: 'This quote was modified by another user. Please reload the latest version before saving.',
+        message:
+          'This quote was modified by another user. Please reload the latest version before saving.',
       })
     }
 
@@ -163,6 +175,18 @@ export default class QuotesController {
       .where('user_id', user.id)
       .preload('corridors')
       .firstOrFail()
+
+    await AuditLogService.record({
+      quoteId: quote.id,
+      userId: user.id,
+      action: AuditLogService.ACTIONS.QUOTE_UPDATED,
+      metadata: {
+        fromVersion: submittedVersion,
+        toVersion: updatedQuote.version,
+        name: payload.name,
+        partnerName: payload.partnerName,
+      },
+    })
 
     return {
       data: {
@@ -181,10 +205,7 @@ export default class QuotesController {
   async destroy({ auth, params, response }: HttpContext) {
     const user = auth.getUserOrFail()
 
-    const quote = await Quote.query()
-      .where('id', params.id)
-      .where('user_id', user.id)
-      .first()
+    const quote = await Quote.query().where('id', params.id).where('user_id', user.id).first()
 
     if (!quote) {
       return response.notFound({
@@ -192,7 +213,14 @@ export default class QuotesController {
       })
     }
 
+    const quoteId = quote.id
     await quote.delete()
+
+    await AuditLogService.record({
+      quoteId,
+      userId: user.id,
+      action: AuditLogService.ACTIONS.QUOTE_DELETED,
+    })
 
     return {
       message: 'Quote deleted successfully',
@@ -240,11 +268,206 @@ export default class QuotesController {
 
     await quote.save()
 
+    await AuditLogService.record({
+      quoteId: quote.id,
+      userId: user.id,
+      action: AuditLogService.ACTIONS.QUOTE_SUBMITTED,
+      metadata: { fromStatus: quote.$original.status, toStatus: 'in_review' },
+    })
+
     return {
       data: {
         ...quote.serialize(),
         ...summary,
       },
     }
+  }
+
+  /**
+   * List corridors attached to a specific quote (AC-4).
+   *
+   * Returns the quote's own corridors with backend calculations.
+   * Ownership is enforced: only the quote's owner can view its corridors.
+   */
+  async corridors({ auth, params, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    const quote = await Quote.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .preload('corridors')
+      .first()
+
+    if (!quote) {
+      return response.notFound({
+        message: 'Quote not found',
+      })
+    }
+
+    const data = quote.corridors.map((corridor) => ({
+      ...corridor.serialize(),
+      calculations: CorridorCalculationService.calculate(corridor),
+    }))
+
+    return response.ok({
+      data,
+      count: data.length,
+    })
+  }
+
+  /**
+   * Attach corridors to a quote (AC-4).
+   *
+   * Only editable quotes (draft / rejected) can have corridors attached.
+   * Ownership is enforced. Corridor IDs are validated to exist.
+   */
+  async attachCorridors({ auth, params, request, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    const quote = await Quote.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .preload('corridors')
+      .first()
+
+    if (!quote) {
+      return response.notFound({
+        message: 'Quote not found',
+      })
+    }
+
+    if (!['draft', 'rejected'].includes(quote.status)) {
+      return response.unprocessableEntity({
+        message: 'Corridors can only be attached to editable quotes (draft or rejected)',
+      })
+    }
+
+    const payload = await request.validateUsing(attachCorridorsValidator)
+
+    // Verify all corridor IDs exist (AC-7 input validation)
+    const existingCorridors = await Corridor.query().whereIn('id', payload.corridorIds)
+    if (existingCorridors.length !== payload.corridorIds.length) {
+      const foundIds = existingCorridors.map((c) => c.id)
+      const missingIds = payload.corridorIds.filter((id) => !foundIds.includes(id))
+      return response.notFound({
+        message: 'Some corridors were not found',
+        missing: missingIds,
+      })
+    }
+
+    // Filter out already-attached corridors to make attach idempotent
+    const alreadyAttachedIds = new Set(quote.corridors.map((c) => c.id))
+    const newIds = payload.corridorIds.filter((cid) => !alreadyAttachedIds.has(cid))
+
+    if (newIds.length > 0) {
+      await quote.related('corridors').attach(newIds)
+    }
+
+    await AuditLogService.record({
+      quoteId: quote.id,
+      userId: user.id,
+      action: AuditLogService.ACTIONS.CORRIDORS_ATTACHED,
+      metadata: { corridorIds: newIds },
+    })
+
+    // Reload with the newly attached corridors
+    await quote.load('corridors')
+
+    const data = quote.corridors.map((corridor) => ({
+      ...corridor.serialize(),
+      calculations: CorridorCalculationService.calculate(corridor),
+    }))
+
+    return response.ok({
+      data,
+      count: data.length,
+    })
+  }
+
+  /**
+   * Detach corridors from a quote (AC-4).
+   *
+   * Only editable quotes (draft / rejected) can have corridors detached.
+   */
+  async detachCorridors({ auth, params, request, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    const quote = await Quote.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .preload('corridors')
+      .first()
+
+    if (!quote) {
+      return response.notFound({
+        message: 'Quote not found',
+      })
+    }
+
+    if (!['draft', 'rejected'].includes(quote.status)) {
+      return response.unprocessableEntity({
+        message: 'Corridors can only be detached from editable quotes (draft or rejected)',
+      })
+    }
+
+    const payload = await request.validateUsing(attachCorridorsValidator)
+
+    await quote.related('corridors').detach(payload.corridorIds)
+
+    await AuditLogService.record({
+      quoteId: quote.id,
+      userId: user.id,
+      action: AuditLogService.ACTIONS.CORRIDORS_DETACHED,
+      metadata: { corridorIds: payload.corridorIds },
+    })
+
+    await quote.load('corridors')
+
+    const data = quote.corridors.map((corridor) => ({
+      ...corridor.serialize(),
+      calculations: CorridorCalculationService.calculate(corridor),
+    }))
+
+    return response.ok({
+      data,
+      count: data.length,
+    })
+  }
+
+  /**
+   * List the audit trail for a quote (AC-11).
+   *
+   * Returns all recorded actions for the quote, most recent first.
+   * Only the quote's owner can view its audit trail.
+   */
+  async auditTrail({ auth, params, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    const quote = await Quote.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .first()
+
+    if (!quote) {
+      return response.notFound({
+        message: 'Quote not found',
+      })
+    }
+
+    const QuoteAuditLog = (await import('#models/quote_audit_log')).default
+    const logs = await QuoteAuditLog.query()
+      .where('quote_id', quote.id)
+      .orderBy('created_at', 'desc')
+      .preload('user')
+
+    return response.ok({
+      data: logs.map((log) => ({
+        id: log.id,
+        action: log.action,
+        metadata: log.metadata,
+        createdAt: log.createdAt.toISO(),
+        user: log.user ? { id: log.user.id, email: log.user.email, fullName: log.user.fullName } : null,
+      })),
+    })
   }
 }

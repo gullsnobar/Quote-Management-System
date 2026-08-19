@@ -73,7 +73,7 @@ export const Signup: React.FC = () => {
               borderRadius: 'var(--radius-md)',
               background: 'var(--danger-light)',
               border: '1px solid var(--danger-border)',
-              color: '#f87171',
+              color: 'var(--text-danger)',
               fontSize: 13,
               marginBottom: 20,
             }}>
@@ -91,7 +91,7 @@ export const Signup: React.FC = () => {
               borderRadius: 'var(--radius-md)',
               background: 'var(--success-light)',
               border: '1px solid var(--success-border)',
-              color: '#34d399',
+              color: 'var(--text-success)',
               fontSize: 13,
               marginBottom: 20,
             }}>

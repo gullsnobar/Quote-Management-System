@@ -24,6 +24,10 @@ export interface ApiDefinition {
       update: typeof routes['account.quotes.update']
       destroy: typeof routes['account.quotes.destroy']
       submit: typeof routes['account.quotes.submit']
+      corridors: typeof routes['account.quotes.corridors']
+      attachCorridors: typeof routes['account.quotes.attach_corridors']
+      detachCorridors: typeof routes['account.quotes.detach_corridors']
+      auditTrail: typeof routes['account.quotes.audit_trail']
     }
     corridors: {
       index: typeof routes['account.corridors.index']

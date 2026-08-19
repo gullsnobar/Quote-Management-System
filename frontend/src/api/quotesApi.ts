@@ -1,5 +1,6 @@
 import api from './axios'
 import type { CreateQuotePayload, Quote, UpdateQuotePayload } from '../types/quote'
+import type { Corridor } from '../types/corridor'
 
 export const quotesApi = {
   async getQuotes(params?: { status?: string; search?: string }): Promise<{ data: Quote[] }> {
@@ -29,6 +30,41 @@ export const quotesApi = {
 
   async submitQuote(id: number | string): Promise<{ data: Quote }> {
     const response = await api.post<{ data: Quote }>(`/account/quotes/${id}/submit`)
+    return response.data
+  },
+
+  // Quote-specific corridors (AC-4)
+  async getQuoteCorridors(id: number | string): Promise<{ data: Corridor[]; count: number }> {
+    const response = await api.get<{ data: Corridor[]; count: number }>(
+      `/account/quotes/${id}/corridors`
+    )
+    return response.data
+  },
+
+  async attachCorridors(
+    id: number | string,
+    corridorIds: number[]
+  ): Promise<{ data: Corridor[]; count: number }> {
+    const response = await api.post<{ data: Corridor[]; count: number }>(
+      `/account/quotes/${id}/corridors/attach`,
+      { corridorIds }
+    )
+    return response.data
+  },
+
+  async detachCorridors(
+    id: number | string,
+    corridorIds: number[]
+  ): Promise<{ data: Corridor[]; count: number }> {
+    const response = await api.post<{ data: Corridor[]; count: number }>(
+      `/account/quotes/${id}/corridors/detach`,
+      { corridorIds }
+    )
+    return response.data
+  },
+
+  async getAuditTrail(id: number | string): Promise<{ data: any[] }> {
+    const response = await api.get<{ data: any[] }>(`/account/quotes/${id}/audit`)
     return response.data
   },
 }

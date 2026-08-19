@@ -2,6 +2,7 @@ import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { FileText, LogOut, User, PlusCircle } from 'lucide-react'
+import { ThemeToggle } from './ThemeToggle'
 
 interface NavbarProps {
   onNewQuote?: () => void
@@ -19,7 +20,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNewQuote }) => {
   return (
     <header style={{
       borderBottom: '1px solid var(--border-subtle)',
-      background: 'rgba(15, 23, 42, 0.85)',
+      background: 'var(--navbar-bg)',
       backdropFilter: 'blur(16px)',
       position: 'sticky',
       top: 0,
@@ -70,7 +71,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNewQuote }) => {
               alignItems: 'center',
               gap: 10,
               padding: '6px 12px',
-              background: 'rgba(30, 41, 59, 0.6)',
+              background: 'var(--navbar-user-bg)',
               border: '1px solid var(--border-subtle)',
               borderRadius: 'var(--radius-full)',
             }}>
@@ -94,10 +95,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onNewQuote }) => {
             </div>
           )}
 
+          <ThemeToggle />
+
           <button
             onClick={handleLogout}
             className="btn btn-secondary btn-sm"
             title="Log out"
+            aria-label="Log out"
             style={{ padding: '8px' }}
           >
             <LogOut size={16} />

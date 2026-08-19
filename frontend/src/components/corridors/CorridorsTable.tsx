@@ -82,7 +82,7 @@ export const CorridorsTable: React.FC<CorridorsTableProps> = ({ corridors, isLoa
               zIndex: 10,
               display: 'grid',
               gridTemplateColumns: columnTemplate,
-              background: '#0b1120',
+              background: 'var(--table-header-bg)',
               borderBottom: '2px solid var(--border-medium)',
               lineHeight: 1.2,
             }}
@@ -103,7 +103,7 @@ export const CorridorsTable: React.FC<CorridorsTableProps> = ({ corridors, isLoa
                 key={header}
                 style={{
                   padding: '14px 16px',
-                  color: index === 6 ? 'var(--cyan)' : index === 7 ? '#f87171' : 'var(--text-muted)',
+                  color: index === 6 ? 'var(--cyan)' : index === 7 ? 'var(--text-danger)' : 'var(--text-muted)',
                   fontWeight: index >= 6 ? 700 : 600,
                   background: index >= 6 ? (index === 6 ? 'rgba(6, 182, 212, 0.05)' : index === 7 ? 'rgba(239, 68, 68, 0.05)' : 'rgba(99, 102, 241, 0.05)') : 'transparent',
                   textAlign: index >= 4 ? 'right' : 'left',
@@ -135,13 +135,13 @@ export const CorridorsTable: React.FC<CorridorsTableProps> = ({ corridors, isLoa
                     display: 'grid',
                     gridTemplateColumns: columnTemplate,
                     borderBottom: '1px solid var(--border-subtle)',
-                    backgroundColor: rowIndex % 2 === 0 ? 'transparent' : 'rgba(30, 41, 59, 0.25)',
+                    backgroundColor: rowIndex % 2 === 0 ? 'transparent' : 'var(--table-row-alt-bg)',
                     transition: 'background-color 0.15s ease',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(51, 65, 85, 0.4)')}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--table-row-hover-bg)')}
                   onMouseLeave={(e) =>
                     (e.currentTarget.style.backgroundColor =
-                      rowIndex % 2 === 0 ? 'transparent' : 'rgba(30, 41, 59, 0.25)')
+                      rowIndex % 2 === 0 ? 'transparent' : 'var(--table-row-alt-bg)')
                   }
                 >
                   <div style={{ padding: '12px 16px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
@@ -202,7 +202,7 @@ export const CorridorsTable: React.FC<CorridorsTableProps> = ({ corridors, isLoa
                     textAlign: 'right',
                     fontFamily: 'var(--font-mono)',
                     fontWeight: 600,
-                    color: '#f87171',
+                    color: 'var(--text-danger)',
                     background: 'rgba(239, 68, 68, 0.02)',
                   }}>
                     ${calc ? calc.cost.toFixed(2) : '-'}
@@ -213,7 +213,7 @@ export const CorridorsTable: React.FC<CorridorsTableProps> = ({ corridors, isLoa
                     textAlign: 'right',
                     fontFamily: 'var(--font-mono)',
                     fontWeight: 700,
-                    color: isMarginPositive ? '#34d399' : '#f87171',
+                    color: isMarginPositive ? 'var(--text-success)' : 'var(--text-danger)',
                     background: 'rgba(99, 102, 241, 0.02)',
                   }}>
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
@@ -227,7 +227,7 @@ export const CorridorsTable: React.FC<CorridorsTableProps> = ({ corridors, isLoa
                     textAlign: 'right',
                     fontFamily: 'var(--font-mono)',
                     fontWeight: 800,
-                    color: isMarginPositive ? '#34d399' : '#f87171',
+                    color: isMarginPositive ? 'var(--text-success)' : 'var(--text-danger)',
                     background: 'rgba(99, 102, 241, 0.02)',
                   }}>
                     {calc ? `${calc.marginPercent.toFixed(1)}%` : '-'}

@@ -1,6 +1,7 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
 import { Login } from './pages/Login'
 import { Signup } from './pages/Signup'
 import { Dashboard } from './pages/Dashboard'
@@ -56,9 +57,10 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 export function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <Routes>
           {/* Public Routes */}
           <Route
             path="/login"
@@ -99,7 +101,8 @@ export function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
 

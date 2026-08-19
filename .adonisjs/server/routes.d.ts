@@ -14,6 +14,10 @@ export type ScannedRoutes = {
     'account.quotes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'account.quotes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'account.quotes.submit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'account.quotes.corridors': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'account.quotes.attach_corridors': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'account.quotes.detach_corridors': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'account.quotes.audit_trail': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'account.corridors.index': { paramsTuple?: []; params?: {} }
     'account.corridors.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
@@ -21,6 +25,8 @@ export type ScannedRoutes = {
     'account.profile.show': { paramsTuple?: []; params?: {} }
     'account.quotes.index': { paramsTuple?: []; params?: {} }
     'account.quotes.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'account.quotes.corridors': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'account.quotes.audit_trail': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'account.corridors.index': { paramsTuple?: []; params?: {} }
     'account.corridors.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
@@ -28,6 +34,8 @@ export type ScannedRoutes = {
     'account.profile.show': { paramsTuple?: []; params?: {} }
     'account.quotes.index': { paramsTuple?: []; params?: {} }
     'account.quotes.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'account.quotes.corridors': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'account.quotes.audit_trail': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'account.corridors.index': { paramsTuple?: []; params?: {} }
     'account.corridors.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
@@ -37,6 +45,8 @@ export type ScannedRoutes = {
     'account.access_tokens.destroy': { paramsTuple?: []; params?: {} }
     'account.quotes.store': { paramsTuple?: []; params?: {} }
     'account.quotes.submit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'account.quotes.attach_corridors': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'account.quotes.detach_corridors': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   PUT: {
     'account.quotes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

@@ -5,8 +5,8 @@ export default class extends BaseSchema {
 
   async up() {
     this.schema.alterTable(this.tableName, (table) => {
-      table.timestamp('created_at').defaultTo(Date.now()).notNullable().alter()
-      table.timestamp('updated_at').defaultTo(Date.now()).nullable().alter()
+      table.timestamp('created_at').defaultTo(this.raw('CURRENT_TIMESTAMP')).notNullable().alter()
+      table.timestamp('updated_at').defaultTo(this.raw('CURRENT_TIMESTAMP')).nullable().alter()
     })
   }
 

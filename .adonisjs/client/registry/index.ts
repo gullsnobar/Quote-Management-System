@@ -66,6 +66,30 @@ const routes = {
     tokens: [{"old":"/api/v1/account/quotes/:id/submit","type":0,"val":"api","end":""},{"old":"/api/v1/account/quotes/:id/submit","type":0,"val":"v1","end":""},{"old":"/api/v1/account/quotes/:id/submit","type":0,"val":"account","end":""},{"old":"/api/v1/account/quotes/:id/submit","type":0,"val":"quotes","end":""},{"old":"/api/v1/account/quotes/:id/submit","type":1,"val":"id","end":""},{"old":"/api/v1/account/quotes/:id/submit","type":0,"val":"submit","end":""}],
     types: placeholder as Registry['account.quotes.submit']['types'],
   },
+  'account.quotes.corridors': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/account/quotes/:id/corridors',
+    tokens: [{"old":"/api/v1/account/quotes/:id/corridors","type":0,"val":"api","end":""},{"old":"/api/v1/account/quotes/:id/corridors","type":0,"val":"v1","end":""},{"old":"/api/v1/account/quotes/:id/corridors","type":0,"val":"account","end":""},{"old":"/api/v1/account/quotes/:id/corridors","type":0,"val":"quotes","end":""},{"old":"/api/v1/account/quotes/:id/corridors","type":1,"val":"id","end":""},{"old":"/api/v1/account/quotes/:id/corridors","type":0,"val":"corridors","end":""}],
+    types: placeholder as Registry['account.quotes.corridors']['types'],
+  },
+  'account.quotes.attach_corridors': {
+    methods: ["POST"],
+    pattern: '/api/v1/account/quotes/:id/corridors/attach',
+    tokens: [{"old":"/api/v1/account/quotes/:id/corridors/attach","type":0,"val":"api","end":""},{"old":"/api/v1/account/quotes/:id/corridors/attach","type":0,"val":"v1","end":""},{"old":"/api/v1/account/quotes/:id/corridors/attach","type":0,"val":"account","end":""},{"old":"/api/v1/account/quotes/:id/corridors/attach","type":0,"val":"quotes","end":""},{"old":"/api/v1/account/quotes/:id/corridors/attach","type":1,"val":"id","end":""},{"old":"/api/v1/account/quotes/:id/corridors/attach","type":0,"val":"corridors","end":""},{"old":"/api/v1/account/quotes/:id/corridors/attach","type":0,"val":"attach","end":""}],
+    types: placeholder as Registry['account.quotes.attach_corridors']['types'],
+  },
+  'account.quotes.detach_corridors': {
+    methods: ["POST"],
+    pattern: '/api/v1/account/quotes/:id/corridors/detach',
+    tokens: [{"old":"/api/v1/account/quotes/:id/corridors/detach","type":0,"val":"api","end":""},{"old":"/api/v1/account/quotes/:id/corridors/detach","type":0,"val":"v1","end":""},{"old":"/api/v1/account/quotes/:id/corridors/detach","type":0,"val":"account","end":""},{"old":"/api/v1/account/quotes/:id/corridors/detach","type":0,"val":"quotes","end":""},{"old":"/api/v1/account/quotes/:id/corridors/detach","type":1,"val":"id","end":""},{"old":"/api/v1/account/quotes/:id/corridors/detach","type":0,"val":"corridors","end":""},{"old":"/api/v1/account/quotes/:id/corridors/detach","type":0,"val":"detach","end":""}],
+    types: placeholder as Registry['account.quotes.detach_corridors']['types'],
+  },
+  'account.quotes.audit_trail': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/account/quotes/:id/audit',
+    tokens: [{"old":"/api/v1/account/quotes/:id/audit","type":0,"val":"api","end":""},{"old":"/api/v1/account/quotes/:id/audit","type":0,"val":"v1","end":""},{"old":"/api/v1/account/quotes/:id/audit","type":0,"val":"account","end":""},{"old":"/api/v1/account/quotes/:id/audit","type":0,"val":"quotes","end":""},{"old":"/api/v1/account/quotes/:id/audit","type":1,"val":"id","end":""},{"old":"/api/v1/account/quotes/:id/audit","type":0,"val":"audit","end":""}],
+    types: placeholder as Registry['account.quotes.audit_trail']['types'],
+  },
   'account.corridors.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/account/corridors',
