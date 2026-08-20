@@ -65,7 +65,9 @@ export const Login: React.FC = () => {
         {/* Login Card */}
         <div className="glass-panel" style={{ padding: 32 }}>
           {error && (
-            <div style={{
+            <div
+              data-cy="auth-error"
+              style={{
               display: 'flex',
               alignItems: 'center',
               gap: 10,
@@ -95,6 +97,7 @@ export const Login: React.FC = () => {
                 placeholder="name@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                data-cy="login-email"
               />
             </div>
 
@@ -110,6 +113,7 @@ export const Login: React.FC = () => {
                 placeholder="••••••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                data-cy="login-password"
               />
             </div>
 
@@ -118,6 +122,7 @@ export const Login: React.FC = () => {
               disabled={isLoading}
               className="btn btn-primary"
               style={{ width: '100%', padding: '12px' }}
+              data-cy="login-submit"
             >
               {isLoading ? 'Signing in...' : (
                 <>

@@ -30,6 +30,8 @@ export interface Corridor {
   createdAt: string
   updatedAt: string | null
   calculations?: CorridorCalculations
+  /** Per-quote negotiated fee override (null = use standard catalog fee). */
+  negotiatedFee?: number | null
 }
 
 export interface CorridorFilters {

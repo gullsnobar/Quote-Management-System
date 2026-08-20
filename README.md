@@ -120,9 +120,11 @@ Current reality:
 - the relationship exists in the schema and models
 - backend quote calculations use preloaded quote corridors
 - tests verify the relationship works at model level
-- **but there is currently no verified route/controller/frontend flow that lets a user manage this relationship**
+- backend routes exist for attach/detach (`POST /account/quotes/:id/corridors/attach` and `/detach`)
+- frontend QuoteDetails page has full "My Corridors" / "Browse Catalog" sub-tab UI with bulk attach/detach
+- audit trail records every attach/detach action
 
-So this relationship is **implemented at the data/model layer**, but **not fully surfaced in the application workflow**.
+So this relationship is **fully implemented** end-to-end: schema, model, API, and UI.
 
 ---
 
@@ -148,9 +150,8 @@ So this relationship is **implemented at the data/model layer**, but **not fully
 
 ### Planned / Not yet fully implemented in end-to-end flow
 
-- quote-specific corridor selection/management
-- complete quote lifecycle transitions to `approved` / `rejected`
-- fully verified conflict-safe stale client update flow
+- complete quote lifecycle transitions to `approved` / `rejected` (no approve/reject endpoints)
+- fully verified conflict-safe stale client update flow (version validator gap)
 - advanced multi-tab or multi-quote editing behavior
 
 ---
@@ -459,6 +460,7 @@ Frontend routes:
 - `/signup`
 - `/`
 - `/quotes/:id`
+- `/profile`
 
 Protected routes use a `ProtectedRoute` wrapper based on auth state.
 
@@ -509,10 +511,11 @@ Responsibilities:
 
 - fetch a single quote
 - switch between view/edit mode
-- save quote updates
+- save quote updates (name, partnerName, contractLength)
 - submit quote
 - show save conflict notifications
-- show quote overview and corridor tab
+- show quote overview, corridors, and audit history tabs
+- manage quote-corridor attachments (bulk attach/detach)
 
 #### Corridor tab
 
@@ -532,16 +535,17 @@ Responsibilities:
 - `frontend/src/pages/Signup.tsx`
 - `frontend/src/context/AuthContext.tsx`
 
-### Important frontend limitation
+### Important frontend note
 
-The frontend `Quote` type only models a subset of backend quote fields. It currently does **not** model fields like:
+The frontend `Quote` type models all backend-calculated quote fields:
 
 - `contractLength`
-- `totalRevenue`
-- `monthlyRevenue`
+- `totalRevenue`, `totalCost`, `totalMargin`, `marginPercent`
+- `monthlyRevenue`, `monthlyCost`, `monthlyMargin`
 - `tcv`
+- `corridorCount`
 
-The backend calculates and returns these values in some quote responses, but the current frontend is not structured around them yet.
+These are returned by the backend (spread from `QuoteCalculationService.calculateForQuote`) and consumed in the Overview tab of QuoteDetails. The frontend also exposes `contractLength` in both the create modal and edit mode (dropdown, 1-5 years).
 
 ---
 
@@ -732,7 +736,9 @@ This table means:
 - schema: implemented
 - Lucid model relationship: implemented
 - tested at model level: implemented
-- API/UI management flow: **not yet implemented**
+- API endpoints (attach/detach/list): implemented and tested
+- UI management flow: implemented (QuoteDetails "My Corridors" / "Browse Catalog" sub-tabs with bulk attach/detach)
+- audit logging: implemented (every attach/detach is recorded)
 
 ---
 
@@ -750,12 +756,11 @@ Backend behavior:
 - `totalRevenue`, `monthlyRevenue`, and `tcv` are initialized to `0`
 - `contractLength` defaults to `1` if not supplied
 
-Current frontend create modal exposes only:
+Current frontend create modal exposes:
 
 - `name`
 - `partnerName`
-
-It does **not** expose `contractLength`.
+- `contractLength` (dropdown, 1-5 years, defaults to 1)
 
 ### Quote listing
 
@@ -796,22 +801,23 @@ Implemented.
 
 ### Quote editing
 
-Implemented, but limited.
+Implemented.
 
 Backend rule:
 
 - only `draft` and `rejected` quotes are editable
 
-Current frontend edit mode only edits:
+Current frontend edit mode edits:
 
 - `name`
 - `partnerName`
+- `contractLength` (dropdown, 1-5 years)
 
 Backend update logic also supports:
 
-- optional `contractLength`
+- optional `contractLength` (validated 1-5)
 
-Current frontend does **not** expose `contractLength`.
+The frontend clamps `contractLength` to the 1-5 range client-side before sending, matching the backend validator.
 
 ### Quote deletion
 
@@ -886,22 +892,22 @@ At the data/model level:
 
 At the app flow level:
 
-- no verified API endpoint currently attaches or detaches corridors from a quote
-- no verified frontend UI currently selects corridors into a quote
+- API endpoints exist for attaching/detaching corridors (`POST /account/quotes/:id/corridors/attach` and `/detach`)
+- frontend QuoteDetails page has "My Corridors" and "Browse Catalog" sub-tabs with bulk selection
+- every attach/detach action is recorded in the audit trail (AC-11)
 
 ### How the Corridors tab works
 
 Current behavior in `QuoteDetails`:
 
-- default tab is `corridors`
-- it fetches corridors from `/account/corridors`
-- filters are sent to the backend
-- results are rendered in a virtualized table
-
-Important:
-
-- this is currently a **global filtered corridor catalog view**
-- it is **not** a verified quote-specific corridor selection view
+- the Corridors tab has two sub-tabs: "My Corridors" (quote-specific) and "Browse Catalog" (global)
+- "My Corridors" fetches corridors attached to the quote via `GET /account/quotes/:id/corridors`
+- "Browse Catalog" fetches the global corridor catalog from `/account/corridors` with backend filtering
+- filters use dropdown selects populated from the database's distinct values (regions, countries, services, currencies, transaction types, partners)
+- filter changes are debounced (300ms) to prevent rapid API calls
+- results are rendered in a virtualized table (`@tanstack/react-virtual`)
+- bulk selection with checkboxes allows attaching/detaching multiple corridors at once
+- every attach/detach action triggers an audit trail entry and a quote data refresh
 
 ### Corridor filtering
 
@@ -929,16 +935,14 @@ Backend supports:
 - `receivingPartner` — case-insensitive partial match
 - `payer` — case-insensitive partial match
 
-#### Important UI/API mismatch
+#### Important UI note
 
-The frontend uses free-text inputs for:
+The frontend uses dropdown selects for all filter fields, populated from the database's distinct values:
 
-- `country`
-- `payoutCurrency`
+- `region`, `country`, `transactionType`, `service`, `payoutCurrency` (dropdowns with distinct values)
+- `receivingPartner`, `payer` (dropdowns with distinct values)
 
-But the backend currently applies exact matching for those fields.
-
-So these filters are implemented, but users must currently enter exact stored values for them to match.
+This eliminates the previous mismatch where free-text inputs required exact values. Users now select from actual stored values.
 
 ### Corridor calculations
 
@@ -1051,14 +1055,9 @@ Frontend currently sends:
 
 - quote `name`
 - quote `partnerName`
+- quote `contractLength` (1-5, dropdown)
 - quote `version` on update
 - corridor filter inputs
-
-Backend update also allows optional:
-
-- `contractLength`
-
-But the current frontend does not expose it.
 
 #### Backend-controlled
 

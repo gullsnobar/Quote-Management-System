@@ -84,6 +84,12 @@ const routes = {
     tokens: [{"old":"/api/v1/account/quotes/:id/corridors/detach","type":0,"val":"api","end":""},{"old":"/api/v1/account/quotes/:id/corridors/detach","type":0,"val":"v1","end":""},{"old":"/api/v1/account/quotes/:id/corridors/detach","type":0,"val":"account","end":""},{"old":"/api/v1/account/quotes/:id/corridors/detach","type":0,"val":"quotes","end":""},{"old":"/api/v1/account/quotes/:id/corridors/detach","type":1,"val":"id","end":""},{"old":"/api/v1/account/quotes/:id/corridors/detach","type":0,"val":"corridors","end":""},{"old":"/api/v1/account/quotes/:id/corridors/detach","type":0,"val":"detach","end":""}],
     types: placeholder as Registry['account.quotes.detach_corridors']['types'],
   },
+  'account.quotes.update_negotiated_fee': {
+    methods: ["PATCH"],
+    pattern: '/api/v1/account/quotes/:id/corridors/:corridorId',
+    tokens: [{"old":"/api/v1/account/quotes/:id/corridors/:corridorId","type":0,"val":"api","end":""},{"old":"/api/v1/account/quotes/:id/corridors/:corridorId","type":0,"val":"v1","end":""},{"old":"/api/v1/account/quotes/:id/corridors/:corridorId","type":0,"val":"account","end":""},{"old":"/api/v1/account/quotes/:id/corridors/:corridorId","type":0,"val":"quotes","end":""},{"old":"/api/v1/account/quotes/:id/corridors/:corridorId","type":1,"val":"id","end":""},{"old":"/api/v1/account/quotes/:id/corridors/:corridorId","type":0,"val":"corridors","end":""},{"old":"/api/v1/account/quotes/:id/corridors/:corridorId","type":1,"val":"corridorId","end":""}],
+    types: placeholder as Registry['account.quotes.update_negotiated_fee']['types'],
+  },
   'account.quotes.audit_trail': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/account/quotes/:id/audit',

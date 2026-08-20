@@ -1,5 +1,5 @@
 import api from './axios'
-import type { CreateQuotePayload, Quote, UpdateQuotePayload } from '../types/quote'
+import type { CreateQuotePayload, Quote, UpdateQuotePayload, AuditLogEntry } from '../types/quote'
 import type { Corridor } from '../types/corridor'
 
 export const quotesApi = {
@@ -63,8 +63,21 @@ export const quotesApi = {
     return response.data
   },
 
-  async getAuditTrail(id: number | string): Promise<{ data: any[] }> {
-    const response = await api.get<{ data: any[] }>(`/account/quotes/${id}/audit`)
+  /** Update the negotiated fee for a corridor on a quote (per-quote override). */
+  async updateNegotiatedFee(
+    quoteId: number | string,
+    corridorId: number,
+    negotiatedFee: number | null
+  ): Promise<{ data: Corridor[]; count: number }> {
+    const response = await api.patch<{ data: Corridor[]; count: number }>(
+      `/account/quotes/${quoteId}/corridors/${corridorId}`,
+      { negotiatedFee }
+    )
+    return response.data
+  },
+
+  async getAuditTrail(id: number | string): Promise<{ data: AuditLogEntry[] }> {
+    const response = await api.get<{ data: AuditLogEntry[] }>(`/account/quotes/${id}/audit`)
     return response.data
   },
 }

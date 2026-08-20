@@ -77,6 +77,7 @@ export default class Corridor extends BaseModel {
     pivotTable: 'quote_corridors',
     pivotForeignKey: 'corridor_id',
     pivotRelatedForeignKey: 'quote_id',
+    pivotColumns: ['negotiated_fee'],
   })
   declare quotes: ManyToMany<typeof Quote>
 }

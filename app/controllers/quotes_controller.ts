@@ -9,6 +9,7 @@ import {
   createQuoteValidator,
   listQuotesValidator,
   updateQuoteValidator,
+  updateNegotiatedFeeValidator,
 } from '#validators/quote'
 
 export default class QuotesController {
@@ -306,7 +307,11 @@ export default class QuotesController {
 
     const data = quote.corridors.map((corridor) => ({
       ...corridor.serialize(),
-      calculations: CorridorCalculationService.calculate(corridor),
+      negotiatedFee: corridor.$extras?.pivot_negotiated_fee ?? null,
+      calculations: CorridorCalculationService.calculate(
+        corridor,
+        corridor.$extras?.pivot_negotiated_fee ?? null
+      ),
     }))
 
     return response.ok({
@@ -375,7 +380,11 @@ export default class QuotesController {
 
     const data = quote.corridors.map((corridor) => ({
       ...corridor.serialize(),
-      calculations: CorridorCalculationService.calculate(corridor),
+      negotiatedFee: corridor.$extras?.pivot_negotiated_fee ?? null,
+      calculations: CorridorCalculationService.calculate(
+        corridor,
+        corridor.$extras?.pivot_negotiated_fee ?? null
+      ),
     }))
 
     return response.ok({
@@ -425,7 +434,109 @@ export default class QuotesController {
 
     const data = quote.corridors.map((corridor) => ({
       ...corridor.serialize(),
-      calculations: CorridorCalculationService.calculate(corridor),
+      negotiatedFee: corridor.$extras?.pivot_negotiated_fee ?? null,
+      calculations: CorridorCalculationService.calculate(
+        corridor,
+        corridor.$extras?.pivot_negotiated_fee ?? null
+      ),
+    }))
+
+    return response.ok({
+      data,
+      count: data.length,
+    })
+  }
+
+  /**
+   * Update the negotiated fee for a specific corridor on a quote.
+   *
+   * Only editable quotes (draft / rejected) can have negotiated fees set.
+   * Ownership is enforced. The corridor must already be attached to the quote.
+   * The global corridor catalog is never modified — only the pivot row.
+   *
+   * After updating the negotiated fee, the quote's summary metrics are
+   * recalculated and persisted so subsequent fetches return correct totals.
+   */
+  async updateNegotiatedFee({ auth, params, request, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    const quote = await Quote.query()
+      .where('id', params.id)
+      .where('user_id', user.id)
+      .preload('corridors')
+      .first()
+
+    if (!quote) {
+      return response.notFound({
+        message: 'Quote not found',
+      })
+    }
+
+    if (!['draft', 'rejected'].includes(quote.status)) {
+      return response.unprocessableEntity({
+        message: 'Negotiated fees can only be set on editable quotes (draft or rejected)',
+      })
+    }
+
+    const corridorId = Number(params.corridorId)
+    const isAttached = quote.corridors.some((c) => c.id === corridorId)
+
+    if (!isAttached) {
+      return response.notFound({
+        message: 'Corridor is not attached to this quote',
+      })
+    }
+
+    const payload = await request.validateUsing(updateNegotiatedFeeValidator)
+
+    // Update the pivot row's negotiated_fee column
+    await quote.related('corridors').sync({
+      [corridorId]: { negotiated_fee: payload.negotiatedFee },
+    })
+
+    // Capture the old value for audit before the sync overwrote it.
+    // We read it from the preloaded corridors' pivot extras.
+    const oldNegotiatedFee = quote.corridors.find((c) => c.id === corridorId)?.$extras?.pivot_negotiated_fee ?? null
+
+    // Reload corridors to get the updated pivot values
+    await quote.load('corridors')
+
+    // Recalculate and persist the quote summary so future fetches
+    // return correct totals without needing to recalculate on read.
+    const summary = QuoteCalculationService.calculateForQuote({
+      corridors: quote.corridors,
+      contractLength: quote.contractLength ?? 1,
+    })
+
+    await Quote.query()
+      .where('id', quote.id)
+      .where('user_id', user.id)
+      .update({
+        totalRevenue: summary.totalRevenue,
+        monthlyRevenue: summary.monthlyRevenue,
+        tcv: summary.tcv,
+        version: quote.version + 1,
+      })
+
+    await AuditLogService.record({
+      quoteId: quote.id,
+      userId: user.id,
+      action: AuditLogService.ACTIONS.CORRIDOR_NEGOTIATED_FEE_UPDATED,
+      metadata: {
+        corridorId,
+        oldNegotiatedFee,
+        newNegotiatedFee: payload.negotiatedFee,
+      },
+    })
+
+    // Build the response with updated corridor data
+    const data = quote.corridors.map((corridor) => ({
+      ...corridor.serialize(),
+      negotiatedFee: corridor.$extras?.pivot_negotiated_fee ?? null,
+      calculations: CorridorCalculationService.calculate(
+        corridor,
+        corridor.$extras?.pivot_negotiated_fee ?? null
+      ),
     }))
 
     return response.ok({

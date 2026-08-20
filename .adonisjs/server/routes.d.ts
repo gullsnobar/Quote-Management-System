@@ -17,6 +17,7 @@ export type ScannedRoutes = {
     'account.quotes.corridors': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'account.quotes.attach_corridors': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'account.quotes.detach_corridors': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'account.quotes.update_negotiated_fee': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'corridorId': ParamValue} }
     'account.quotes.audit_trail': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'account.corridors.index': { paramsTuple?: []; params?: {} }
     'account.corridors.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -53,6 +54,9 @@ export type ScannedRoutes = {
   }
   DELETE: {
     'account.quotes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+  }
+  PATCH: {
+    'account.quotes.update_negotiated_fee': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'corridorId': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

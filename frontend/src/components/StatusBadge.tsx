@@ -48,6 +48,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
   return (
     <span
       className={`badge ${className}`}
+      data-cy="quote-status"
+      data-cy-status={status}
       style={{
         fontSize: size === 'sm' ? 11 : 12,
         padding: size === 'sm' ? '3px 8px' : '4px 10px',

@@ -45,5 +45,6 @@ export default class AuditLogService {
     QUOTE_DELETED: 'quote.deleted',
     CORRIDORS_ATTACHED: 'quote.corridors.attached',
     CORRIDORS_DETACHED: 'quote.corridors.detached',
+    CORRIDOR_NEGOTIATED_FEE_UPDATED: 'quote.corridor.negotiated_fee_updated',
   } as const
 }

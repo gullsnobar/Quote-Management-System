@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { quotesApi } from '../api/quotesApi'
 import type { Quote, QuoteStatus } from '../types/quote'
@@ -24,8 +24,10 @@ import {
 
 export const Dashboard: React.FC = () => {
   const [quotes, setQuotes] = useState<Quote[]>([])
+  const [allQuotes, setAllQuotes] = useState<Quote[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [fetchError, setFetchError] = useState<string | null>(null)
 
@@ -33,22 +35,37 @@ export const Dashboard: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [name, setName] = useState('')
   const [partnerName, setPartnerName] = useState('')
+  const [contractLength, setContractLength] = useState(1)
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Loading guard to prevent duplicate API calls
+  const isFetching = useRef(false)
 
   const hasActiveFilters = search !== '' || statusFilter !== ''
 
   const handleResetFilters = () => {
     setSearch('')
+    setDebouncedSearch('')
     setStatusFilter('')
   }
 
+  // Debounce search input — only fire API after user stops typing for 300ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [search])
+
   const fetchQuotes = async () => {
+    if (isFetching.current) return
+    isFetching.current = true
     try {
       setIsLoading(true)
       setFetchError(null)
       const res = await quotesApi.getQuotes({
-        search: search || undefined,
+        search: debouncedSearch || undefined,
         status: statusFilter || undefined,
       })
       setQuotes(res.data)
@@ -60,12 +77,26 @@ export const Dashboard: React.FC = () => {
       )
     } finally {
       setIsLoading(false)
+      isFetching.current = false
     }
   }
 
+  // Fetch all quotes once on mount for accurate stats (independent of filters)
+  useEffect(() => {
+    quotesApi.getQuotes().then((res) => setAllQuotes(res.data)).catch(() => {})
+  }, [])
+
+  // Re-fetch when debounced search or status filter changes
   useEffect(() => {
     fetchQuotes()
-  }, [search, statusFilter])
+  }, [debouncedSearch, statusFilter])
+
+  const refreshAllQuotes = async () => {
+    try {
+      const res = await quotesApi.getQuotes()
+      setAllQuotes(res.data)
+    } catch {}
+  }
 
   const handleCreateQuote = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -73,11 +104,13 @@ export const Dashboard: React.FC = () => {
     setIsCreating(true)
 
     try {
-      await quotesApi.createQuote({ name, partnerName })
+      await quotesApi.createQuote({ name, partnerName, contractLength })
       setIsModalOpen(false)
       setName('')
       setPartnerName('')
+      setContractLength(1)
       await fetchQuotes()
+      await refreshAllQuotes()
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to create quote')
     } finally {
@@ -93,6 +126,7 @@ export const Dashboard: React.FC = () => {
     try {
       await quotesApi.submitQuote(id)
       await fetchQuotes()
+      await refreshAllQuotes()
     } catch (err: any) {
       alert(err.response?.data?.message || 'Submission failed')
     }
@@ -106,18 +140,19 @@ export const Dashboard: React.FC = () => {
     try {
       await quotesApi.deleteQuote(id)
       await fetchQuotes()
+      await refreshAllQuotes()
     } catch (err: any) {
       alert(err.response?.data?.message || 'Delete failed')
     }
   }
 
-  // Calculate statistics
+  // Calculate statistics from ALL quotes (not filtered) so stats stay accurate
   const stats = {
-    total: quotes.length,
-    draft: quotes.filter((q) => q.status === 'draft').length,
-    in_review: quotes.filter((q) => q.status === 'in_review').length,
-    approved: quotes.filter((q) => q.status === 'approved').length,
-    rejected: quotes.filter((q) => q.status === 'rejected').length,
+    total: allQuotes.length,
+    draft: allQuotes.filter((q) => q.status === 'draft').length,
+    in_review: allQuotes.filter((q) => q.status === 'in_review').length,
+    approved: allQuotes.filter((q) => q.status === 'approved').length,
+    rejected: allQuotes.filter((q) => q.status === 'rejected').length,
   }
 
   return (
@@ -140,14 +175,6 @@ export const Dashboard: React.FC = () => {
               Manage commercial quotes, review cycles, and corridor fee structures
             </p>
           </div>
-
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="btn btn-primary"
-          >
-            <PlusCircle size={18} />
-            <span>Create New Quote</span>
-          </button>
         </div>
 
         {/* Stats Grid */}
@@ -315,14 +342,20 @@ export const Dashboard: React.FC = () => {
               const isEditable = quote.status === 'draft' || quote.status === 'rejected'
 
               return (
-                <div
+                <Link
                   key={quote.id}
+                  to={`/quotes/${quote.id}`}
                   className="glass-card"
+                  data-cy="quote-card"
+                  data-cy-quote-id={quote.id}
                   style={{
                     padding: 24,
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
+                    textDecoration: 'none',
+                    cursor: 'pointer',
+                    transition: 'transform 0.15s ease, box-shadow 0.15s ease',
                   }}
                 >
                   <div>
@@ -348,30 +381,33 @@ export const Dashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Card Actions */}
-                  <div style={{
-                    marginTop: 20,
-                    paddingTop: 16,
-                    borderTop: '1px solid var(--border-subtle)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 8,
-                  }}>
-                    <Link
-                      to={`/quotes/${quote.id}`}
+                  {/* Card Actions — stopPropagation so clicking buttons doesn't navigate */}
+                  <div
+                    style={{
+                      marginTop: 20,
+                      paddingTop: 16,
+                      borderTop: '1px solid var(--border-subtle)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 8,
+                    }}
+                    onClick={(e) => e.preventDefault()}
+                  >
+                    <span
                       className="btn btn-secondary btn-sm"
-                      style={{ flex: 1, textDecoration: 'none' }}
+                      style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                     >
                       <span>View Details</span>
                       <ArrowRight size={14} />
-                    </Link>
+                    </span>
 
                     {isEditable && (
                       <button
                         onClick={(e) => handleSubmitQuote(quote.id, e)}
                         className="btn btn-success btn-sm"
                         title="Submit quote for review (AC-3)"
+                        data-cy="quote-submit"
                       >
                         <Send size={13} />
                         <span>Submit</span>
@@ -383,11 +419,12 @@ export const Dashboard: React.FC = () => {
                       className="btn btn-danger btn-sm"
                       style={{ padding: '7px 10px' }}
                       title="Delete quote"
+                      data-cy="quote-delete"
                     >
                       <Trash2 size={14} />
                     </button>
                   </div>
-                </div>
+                </Link>
               )
             })}
           </div>
@@ -454,6 +491,7 @@ export const Dashboard: React.FC = () => {
                   placeholder="e.g. Q3 2026 Remittance Agreement"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  data-cy="create-quote-name"
                 />
               </div>
 
@@ -466,7 +504,25 @@ export const Dashboard: React.FC = () => {
                   placeholder="e.g. Wise Ltd., Banking Circle"
                   value={partnerName}
                   onChange={(e) => setPartnerName(e.target.value)}
+                  data-cy="create-quote-partner"
                 />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 24 }}>
+                <label className="form-label">Contract Length</label>
+                <select
+                  className="form-select"
+                  value={contractLength}
+                  onChange={(e) => setContractLength(Number(e.target.value))}
+                  data-cy="create-quote-contract-length"
+                >
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <option key={n} value={n}>{n} Year{n !== 1 ? 's' : ''}</option>
+                  ))}
+                </select>
+                <p style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 6 }}>
+                  Affects Total Contract Value (TCV = annual revenue × years)
+                </p>
               </div>
 
               <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
@@ -474,6 +530,7 @@ export const Dashboard: React.FC = () => {
                   type="button"
                   onClick={() => setIsModalOpen(false)}
                   className="btn btn-secondary"
+                  data-cy="create-quote-cancel"
                 >
                   Cancel
                 </button>
@@ -481,6 +538,7 @@ export const Dashboard: React.FC = () => {
                   type="submit"
                   disabled={isCreating}
                   className="btn btn-primary"
+                  data-cy="create-quote-submit"
                 >
                   {isCreating ? 'Creating...' : 'Create Quote'}
                 </button>

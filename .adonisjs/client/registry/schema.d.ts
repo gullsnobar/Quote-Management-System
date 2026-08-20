@@ -163,6 +163,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/quotes_controller').default['detachCorridors']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'account.quotes.update_negotiated_fee': {
+    methods: ["PATCH"]
+    pattern: '/api/v1/account/quotes/:id/corridors/:corridorId'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/quote').updateNegotiatedFeeValidator)>>
+      paramsTuple: [ParamValue, ParamValue]
+      params: { id: ParamValue; corridorId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/quote').updateNegotiatedFeeValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/quotes_controller').default['updateNegotiatedFee']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/quotes_controller').default['updateNegotiatedFee']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'account.quotes.audit_trail': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/account/quotes/:id/audit'

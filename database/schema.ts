@@ -101,7 +101,7 @@ export class QuoteAuditLogSchema extends BaseModel {
 }
 
 export class QuoteCorridorSchema extends BaseModel {
-  static $columns = ['corridorId', 'createdAt', 'id', 'quoteId', 'updatedAt'] as const
+  static $columns = ['corridorId', 'createdAt', 'id', 'negotiatedFee', 'quoteId', 'updatedAt'] as const
   $columns = QuoteCorridorSchema.$columns
   @column()
   declare corridorId: number
@@ -109,6 +109,8 @@ export class QuoteCorridorSchema extends BaseModel {
   declare createdAt: DateTime
   @column({ isPrimary: true })
   declare id: number
+  @column()
+  declare negotiatedFee: string | null
   @column()
   declare quoteId: number
   @column.dateTime({ autoCreate: true, autoUpdate: true })

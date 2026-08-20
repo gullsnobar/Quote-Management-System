@@ -65,3 +65,18 @@ export const attachCorridorsValidator = vine.compile(
     corridorIds: vine.array(vine.number().positive()).minLength(1).maxLength(500),
   })
 )
+
+/**
+ * Validates the body for updating a corridor's negotiated fee on a quote.
+ *
+ * negotiatedFee:
+ *   - A non-negative number sets the override (replaces the catalog's
+ *     std_fixed_fee_usd in revenue calculations for this quote only).
+ *   - null clears the override so the standard catalog fee is used again.
+ *   - Negative values, strings, and other invalid types are rejected.
+ */
+export const updateNegotiatedFeeValidator = vine.compile(
+  vine.object({
+    negotiatedFee: vine.number().min(0).nullable(),
+  })
+)

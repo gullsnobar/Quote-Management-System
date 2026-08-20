@@ -2,10 +2,12 @@ import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
+import { QueryProvider } from './providers/QueryProvider'
 import { Login } from './pages/Login'
 import { Signup } from './pages/Signup'
 import { Dashboard } from './pages/Dashboard'
 import { QuoteDetails } from './pages/QuoteDetails'
+import { Profile } from './pages/Profile'
 
 // Guard for authenticated routes
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -59,8 +61,9 @@ export function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Router>
-          <Routes>
+        <QueryProvider>
+          <Router>
+            <Routes>
           {/* Public Routes */}
           <Route
             path="/login"
@@ -96,11 +99,20 @@ export function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Router>
+          </Routes>
+          </Router>
+        </QueryProvider>
       </AuthProvider>
     </ThemeProvider>
   )

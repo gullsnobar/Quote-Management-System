@@ -27,6 +27,7 @@ export interface ApiDefinition {
       corridors: typeof routes['account.quotes.corridors']
       attachCorridors: typeof routes['account.quotes.attach_corridors']
       detachCorridors: typeof routes['account.quotes.detach_corridors']
+      updateNegotiatedFee: typeof routes['account.quotes.update_negotiated_fee']
       auditTrail: typeof routes['account.quotes.audit_trail']
     }
     corridors: {

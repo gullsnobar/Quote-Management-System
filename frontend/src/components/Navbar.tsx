@@ -1,7 +1,7 @@
 import React from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { FileText, LogOut, User, PlusCircle } from 'lucide-react'
+import { FileText, User, PlusCircle } from 'lucide-react'
 import { ThemeToggle } from './ThemeToggle'
 
 interface NavbarProps {
@@ -9,13 +9,14 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onNewQuote }) => {
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
+  const { user } = useAuth()
 
-  const handleLogout = async () => {
-    await logout()
-    navigate('/login')
-  }
+  const initials = (user?.fullName || user?.email || 'U')
+    .split(' ')
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
 
   return (
     <header style={{
@@ -59,53 +60,48 @@ export const Navbar: React.FC<NavbarProps> = ({ onNewQuote }) => {
         {/* User Info & Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           {onNewQuote && (
-            <button onClick={onNewQuote} className="btn btn-primary btn-sm">
+            <button onClick={onNewQuote} className="btn btn-primary btn-sm" data-cy="nav-create-quote">
               <PlusCircle size={15} />
               <span>Create Quote</span>
             </button>
           )}
 
+          <ThemeToggle />
+
           {user && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              padding: '6px 12px',
-              background: 'var(--navbar-user-bg)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-full)',
-            }}>
-              <div style={{
-                width: 26,
-                height: 26,
+            <Link
+              to="/profile"
+              title="View Profile"
+              aria-label="View Profile"
+              style={{
+                width: 36,
+                height: 36,
                 borderRadius: '50%',
-                background: 'var(--primary-light)',
-                color: 'var(--primary)',
+                background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
+                color: '#ffffff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: 700,
-              }}>
-                <User size={14} />
-              </div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-main)' }}>
-                {user.fullName || user.email.split('@')[0]}
-              </div>
-            </div>
+                textDecoration: 'none',
+                flexShrink: 0,
+                cursor: 'pointer',
+                transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+                boxShadow: '0 2px 8px rgba(99, 102, 241, 0.25)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.08)'
+                e.currentTarget.style.boxShadow = '0 4px 14px rgba(99, 102, 241, 0.4)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(99, 102, 241, 0.25)'
+              }}
+            >
+              {initials || <User size={16} />}
+            </Link>
           )}
-
-          <ThemeToggle />
-
-          <button
-            onClick={handleLogout}
-            className="btn btn-secondary btn-sm"
-            title="Log out"
-            aria-label="Log out"
-            style={{ padding: '8px' }}
-          >
-            <LogOut size={16} />
-          </button>
         </div>
       </div>
     </header>

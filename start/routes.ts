@@ -50,6 +50,9 @@ router
         router.post('quotes/:id/corridors/attach', [controllers.Quotes, 'attachCorridors'])
         router.post('quotes/:id/corridors/detach', [controllers.Quotes, 'detachCorridors'])
 
+        // Per-quote corridor pricing override
+        router.patch('quotes/:id/corridors/:corridorId', [controllers.Quotes, 'updateNegotiatedFee'])
+
         // Quote audit trail (AC-11)
         router.get('quotes/:id/audit', [controllers.Quotes, 'auditTrail'])
 
