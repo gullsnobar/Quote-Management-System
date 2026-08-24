@@ -1,13 +1,15 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authApi } from '../api/authApi'
-import { FileText, Lock, Mail, User, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { FileText, Lock, Mail, User, ArrowRight, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react'
 
 export const Signup: React.FC = () => {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -136,15 +138,41 @@ export const Signup: React.FC = () => {
                 <Lock size={13} color="var(--primary)" />
                 <span>Password (min 8 chars, 1 number, 1 symbol)</span>
               </label>
-              <input
-                type="password"
-                required
-                minLength={8}
-                className="form-input"
-                placeholder="••••••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  minLength={8}
+                  className="form-input"
+                  style={{ paddingRight: 40 }}
+                  placeholder="••••••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  data-cy="signup-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  data-cy="signup-password-toggle"
+                  style={{
+                    position: 'absolute',
+                    right: 10,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    padding: 4,
+                    cursor: 'pointer',
+                    color: 'var(--text-muted)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             <div className="form-group" style={{ marginBottom: 24 }}>
@@ -152,15 +180,41 @@ export const Signup: React.FC = () => {
                 <Lock size={13} color="var(--primary)" />
                 <span>Confirm Password</span>
               </label>
-              <input
-                type="password"
-                required
-                minLength={8}
-                className="form-input"
-                placeholder="Re-enter your password"
-                value={passwordConfirmation}
-                onChange={(e) => setPasswordConfirmation(e.target.value)}
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPasswordConfirmation ? 'text' : 'password'}
+                  required
+                  minLength={8}
+                  className="form-input"
+                  style={{ paddingRight: 40 }}
+                  placeholder="Re-enter your password"
+                  value={passwordConfirmation}
+                  onChange={(e) => setPasswordConfirmation(e.target.value)}
+                  data-cy="signup-password-confirmation"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordConfirmation((s) => !s)}
+                  aria-label={showPasswordConfirmation ? 'Hide password' : 'Show password'}
+                  data-cy="signup-password-confirmation-toggle"
+                  style={{
+                    position: 'absolute',
+                    right: 10,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    padding: 4,
+                    cursor: 'pointer',
+                    color: 'var(--text-muted)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {showPasswordConfirmation ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             <button
