@@ -1,7 +1,9 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider, useAuth } from './context/AuthContext'
-import { ThemeProvider } from './context/ThemeContext'
+import { StoreProvider } from './store/StoreProvider'
+import { useAppDispatch, useAppSelector } from './store/hooks'
+import { verifyAuth } from './features/auth/authSlice'
+import { ThemeEffect } from './features/theme/ThemeEffect'
 import { QueryProvider } from './providers/QueryProvider'
 import { Login } from './pages/Login'
 import { Signup } from './pages/Signup'
@@ -11,7 +13,8 @@ import { Profile } from './pages/Profile'
 
 // Guard for authenticated routes
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth()
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
+  const isLoading = useAppSelector((state) => state.auth.isLoading)
 
   if (isLoading) {
     return (
@@ -44,7 +47,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
 // Guard for public auth routes (redirect to / if already logged in)
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth()
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
+  const isLoading = useAppSelector((state) => state.auth.isLoading)
 
   if (isLoading) {
     return null
@@ -57,13 +61,26 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>
 }
 
-export function App() {
+/**
+ * Inner app that has access to the Redux store.
+ * Dispatches the initial auth verification on mount.
+ */
+const AppInner: React.FC = () => {
+  const dispatch = useAppDispatch()
+  const token = useAppSelector((state) => state.auth.token)
+
+  // Verify the stored token once on startup (mirrors the old AuthContext useEffect)
+  useEffect(() => {
+    if (token) {
+      dispatch(verifyAuth())
+    }
+  }, [dispatch, token])
+
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <QueryProvider>
-          <Router>
-            <Routes>
+    <>
+      <ThemeEffect />
+      <Router>
+        <Routes>
           {/* Public Routes */}
           <Route
             path="/login"
@@ -110,11 +127,19 @@ export function App() {
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-          </Router>
-        </QueryProvider>
-      </AuthProvider>
-    </ThemeProvider>
+        </Routes>
+      </Router>
+    </>
+  )
+}
+
+export function App() {
+  return (
+    <StoreProvider>
+      <QueryProvider>
+        <AppInner />
+      </QueryProvider>
+    </StoreProvider>
   )
 }
 

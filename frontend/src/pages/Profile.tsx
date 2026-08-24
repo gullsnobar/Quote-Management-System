@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useAppDispatch, useAppSelector } from '../store/hooks'
+import { logoutUser } from '../features/auth/authSlice'
 import { quotesApi } from '../api/quotesApi'
 import { Navbar } from '../components/Navbar'
 import type { Quote } from '../types/quote'
@@ -19,7 +20,8 @@ import {
 } from 'lucide-react'
 
 export const Profile: React.FC = () => {
-  const { user, logout } = useAuth()
+  const dispatch = useAppDispatch()
+  const user = useAppSelector((state) => state.auth.user)
   const navigate = useNavigate()
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -34,7 +36,7 @@ export const Profile: React.FC = () => {
 
   const handleLogout = async () => {
     if (!window.confirm('Are you sure you want to log out?')) return
-    await logout()
+    await dispatch(logoutUser())
     navigate('/login')
   }
 

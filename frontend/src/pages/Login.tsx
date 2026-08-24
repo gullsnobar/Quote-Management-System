@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useAppDispatch } from '../store/hooks'
+import { setCredentials } from '../features/auth/authSlice'
 import { authApi } from '../api/authApi'
 import { FileText, Lock, Mail, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react'
 
@@ -11,7 +12,7 @@ export const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const { login } = useAuth()
+  const dispatch = useAppDispatch()
   const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,7 +22,7 @@ export const Login: React.FC = () => {
 
     try {
       const response = await authApi.login({ email, password })
-      login(response.token, response.user)
+      dispatch(setCredentials({ token: response.token, user: response.user }))
       navigate('/')
     } catch (err: any) {
       setError(err.response?.data?.message || err.response?.data?.errors?.[0]?.message || 'Invalid credentials')

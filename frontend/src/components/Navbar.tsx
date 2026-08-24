@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useAppSelector } from '../store/hooks'
 import { FileText, User, PlusCircle } from 'lucide-react'
 import { ThemeToggle } from './ThemeToggle'
 
@@ -9,7 +9,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onNewQuote }) => {
-  const { user } = useAuth()
+  const user = useAppSelector((state) => state.auth.user)
 
   const initials = (user?.fullName || user?.email || 'U')
     .split(' ')

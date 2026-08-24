@@ -1,13 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { screen, fireEvent } from '@testing-library/react'
 import { ThemeToggle } from '../../components/ThemeToggle'
+import { renderWithStore } from '../utils/renderWithStore'
+import type { RootState } from '../../store'
 
-// Mock the ThemeContext
-vi.mock('../../context/ThemeContext', () => ({
-  useTheme: vi.fn(),
-}))
-
-import { useTheme } from '../../context/ThemeContext'
+/** Helper: build a full preloaded state with just the theme customized. */
+function withTheme(theme: 'light' | 'dark'): RootState {
+  return {
+    auth: {
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      isLoading: false,
+    },
+    theme: { theme },
+  }
+}
 
 describe('ThemeToggle', () => {
   beforeEach(() => {
@@ -15,13 +23,9 @@ describe('ThemeToggle', () => {
   })
 
   it('renders a Sun icon when in dark mode', () => {
-    vi.mocked(useTheme).mockReturnValue({
-      theme: 'dark',
-      toggleTheme: vi.fn(),
-      setTheme: vi.fn(),
+    renderWithStore(<ThemeToggle />, {
+      preloadedState: withTheme('dark'),
     })
-
-    render(<ThemeToggle />)
 
     const button = screen.getByRole('button')
     expect(button).toBeInTheDocument()
@@ -30,30 +34,23 @@ describe('ThemeToggle', () => {
   })
 
   it('renders a Moon icon when in light mode', () => {
-    vi.mocked(useTheme).mockReturnValue({
-      theme: 'light',
-      toggleTheme: vi.fn(),
-      setTheme: vi.fn(),
+    renderWithStore(<ThemeToggle />, {
+      preloadedState: withTheme('light'),
     })
-
-    render(<ThemeToggle />)
 
     const button = screen.getByRole('button')
     expect(button).toHaveAttribute('aria-label', 'Switch to Dark Mode')
     expect(button).toHaveAttribute('aria-pressed', 'true')
   })
 
-  it('calls toggleTheme when clicked', () => {
-    const toggleTheme = vi.fn()
-    vi.mocked(useTheme).mockReturnValue({
-      theme: 'dark',
-      toggleTheme,
-      setTheme: vi.fn(),
+  it('dispatches toggleTheme when clicked', () => {
+    const { store } = renderWithStore(<ThemeToggle />, {
+      preloadedState: withTheme('dark'),
     })
 
-    render(<ThemeToggle />)
-
     fireEvent.click(screen.getByRole('button'))
-    expect(toggleTheme).toHaveBeenCalledTimes(1)
+
+    // The store should now reflect the toggled theme
+    expect(store.getState().theme.theme).toBe('light')
   })
 })
