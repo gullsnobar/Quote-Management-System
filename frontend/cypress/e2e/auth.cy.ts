@@ -47,8 +47,10 @@ describe('Authentication', () => {
     cy.visit('/profile')
 
     cy.get('[data-cy=logout-button]').should('be.visible')
-    cy.on('window:confirm', () => true)
     cy.get('[data-cy=logout-button]').click()
+
+    cy.get('[data-cy=confirm-dialog]').should('be.visible')
+    cy.get('[data-cy=confirm-ok]').click()
 
     cy.url().should('include', '/login')
     cy.get('[data-cy=login-submit]').should('be.visible')

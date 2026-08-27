@@ -6,6 +6,7 @@ import type { Corridor, CorridorFilters as FiltersType } from '../../types/corri
 import type { QuoteId } from '../../lib/queryKeys'
 import { MyCorridors } from './MyCorridors'
 import { BrowseCorridors } from './BrowseCorridors'
+import { ConfirmDialog } from '../ConfirmDialog'
 import { Layers, Plus } from 'lucide-react'
 
 /**
@@ -93,6 +94,9 @@ export const QuoteCorridorsTab: React.FC<QuoteCorridorsTabProps> = ({
   const [isBulkAttaching, setIsBulkAttaching] = useState(false)
   const [isBulkDetaching, setIsBulkDetaching] = useState(false)
 
+  // Confirmation dialog state (replaces window.confirm)
+  const [confirmState, setConfirmState] = useState<{ message: string; action: () => void } | null>(null)
+
   // Debounce filter changes — only fetch after user stops changing for 300ms
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -146,6 +150,15 @@ export const QuoteCorridorsTab: React.FC<QuoteCorridorsTabProps> = ({
         return next
       })
     }
+  }
+
+  // Ask for confirmation before detaching a single corridor
+  const requestDetachCorridor = (corridorId: number) => {
+    if (!quoteId || !isEditable) return
+    setConfirmState({
+      message: 'Remove this corridor from the quote?',
+      action: () => handleDetachCorridor(corridorId),
+    })
   }
 
   // Detach a single corridor
@@ -222,6 +235,15 @@ export const QuoteCorridorsTab: React.FC<QuoteCorridorsTabProps> = ({
     } finally {
       setIsBulkAttaching(false)
     }
+  }
+
+  // Ask for confirmation before bulk detaching
+  const requestBulkDetach = () => {
+    if (!quoteId || !isEditable || selectedCorridorIds.size === 0) return
+    setConfirmState({
+      message: `Remove ${selectedCorridorIds.size} corridor${selectedCorridorIds.size !== 1 ? 's' : ''} from the quote?`,
+      action: () => handleBulkDetach(),
+    })
   }
 
   // Bulk detach selected corridors
@@ -333,8 +355,8 @@ export const QuoteCorridorsTab: React.FC<QuoteCorridorsTabProps> = ({
           onToggleSelection={toggleCorridorSelection}
           onSelectAll={handleSelectAllAttached}
           onClearSelection={() => setSelectedCorridorIds(new Set())}
-          onDetach={handleDetachCorridor}
-          onBulkDetach={handleBulkDetach}
+          onDetach={requestDetachCorridor}
+          onBulkDetach={requestBulkDetach}
           detachingIds={detachingIds}
           isBulkDetaching={isBulkDetaching}
           onBrowseCatalog={() => handleSubTabChange('catalog')}
@@ -365,6 +387,20 @@ export const QuoteCorridorsTab: React.FC<QuoteCorridorsTabProps> = ({
           filteredCount={corridorsCount}
         />
       )}
+
+      {/* Confirmation dialog for destructive corridor actions */}
+      <ConfirmDialog
+        open={confirmState !== null}
+        title="Remove Corridor"
+        message={confirmState?.message ?? ''}
+        confirmLabel="Remove"
+        danger
+        onConfirm={() => {
+          confirmState?.action()
+          setConfirmState(null)
+        }}
+        onCancel={() => setConfirmState(null)}
+      />
     </section>
   )
 }

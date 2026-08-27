@@ -4,6 +4,7 @@ import { quotesApi } from '../api/quotesApi'
 import type { Quote, QuoteStatus } from '../types/quote'
 import { Navbar } from '../components/Navbar'
 import { StatusBadge } from '../components/StatusBadge'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import {
   FileText,
   PlusCircle,
@@ -41,6 +42,15 @@ export const Dashboard: React.FC = () => {
 
   // Loading guard to prevent duplicate API calls
   const isFetching = useRef(false)
+
+  // Confirmation dialog state (replaces window.confirm)
+  const [confirmState, setConfirmState] = useState<{
+    title: string
+    message: string
+    confirmLabel: string
+    danger: boolean
+    action: () => void
+  } | null>(null)
 
   const hasActiveFilters = search !== '' || statusFilter !== ''
 
@@ -118,32 +128,44 @@ export const Dashboard: React.FC = () => {
     }
   }
 
-  const handleSubmitQuote = async (id: number, e: React.MouseEvent) => {
+  const handleSubmitQuote = (id: number, e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    if (!window.confirm('Submit this quote for review? Status will change to in_review.')) return
-
-    try {
-      await quotesApi.submitQuote(id)
-      await fetchQuotes()
-      await refreshAllQuotes()
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Submission failed')
-    }
+    setConfirmState({
+      title: 'Submit for Review',
+      message: 'Submit this quote for review? Status will change to in_review.',
+      confirmLabel: 'Submit',
+      danger: false,
+      action: async () => {
+        try {
+          await quotesApi.submitQuote(id)
+          await fetchQuotes()
+          await refreshAllQuotes()
+        } catch (err: any) {
+          alert(err.response?.data?.message || 'Submission failed')
+        }
+      },
+    })
   }
 
-  const handleDeleteQuote = async (id: number, e: React.MouseEvent) => {
+  const handleDeleteQuote = (id: number, e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    if (!window.confirm('Are you sure you want to delete this quote?')) return
-
-    try {
-      await quotesApi.deleteQuote(id)
-      await fetchQuotes()
-      await refreshAllQuotes()
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Delete failed')
-    }
+    setConfirmState({
+      title: 'Delete Quote',
+      message: 'Are you sure you want to delete this quote? This action cannot be undone.',
+      confirmLabel: 'Delete',
+      danger: true,
+      action: async () => {
+        try {
+          await quotesApi.deleteQuote(id)
+          await fetchQuotes()
+          await refreshAllQuotes()
+        } catch (err: any) {
+          alert(err.response?.data?.message || 'Delete failed')
+        }
+      },
+    })
   }
 
   // Calculate statistics from ALL quotes (not filtered) so stats stay accurate
@@ -175,6 +197,14 @@ export const Dashboard: React.FC = () => {
               Manage commercial quotes, review cycles, and corridor fee structures
             </p>
           </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="btn btn-primary"
+            data-cy="header-create-quote"
+          >
+            <PlusCircle size={16} />
+            <span>Create Quote</span>
+          </button>
         </div>
 
         {/* Stats Grid */}
@@ -547,6 +577,20 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Confirmation dialog for submit/delete quote */}
+      <ConfirmDialog
+        open={confirmState !== null}
+        title={confirmState?.title ?? ''}
+        message={confirmState?.message ?? ''}
+        confirmLabel={confirmState?.confirmLabel}
+        danger={confirmState?.danger}
+        onConfirm={() => {
+          confirmState?.action()
+          setConfirmState(null)
+        }}
+        onCancel={() => setConfirmState(null)}
+      />
     </div>
   )
 }

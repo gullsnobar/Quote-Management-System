@@ -39,6 +39,9 @@ describe('Corridor Attachment and Detachment', () => {
         .should('not.be.disabled')
         .click({ force: true })
 
+      cy.get('[data-cy=confirm-dialog]').should('be.visible')
+      cy.get('[data-cy=confirm-ok]').click()
+
       cy.get(`[data-cy=corridor-row][data-cy-corridor-id="${TARGET_CORRIDOR_ID}"]`)
         .should('not.exist')
 

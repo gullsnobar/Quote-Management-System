@@ -114,20 +114,22 @@ export const BrowseCorridors: React.FC<BrowseCorridorsProps> = ({
             />
             <span>Select All (filtered, not yet attached)</span>
           </label>
-          {selectedIds.size > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {selectedIds.size > 0 && (
               <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)' }}>
                 {selectedIds.size} selected
               </span>
-              <button onClick={onBulkAttach} disabled={isBulkAttaching} className="btn btn-primary btn-sm" data-cy="bulk-attach">
-                <Plus size={14} />
-                <span>{isBulkAttaching ? 'Attaching...' : `Attach ${selectedIds.size} Selected`}</span>
-              </button>
+            )}
+            <button onClick={onBulkAttach} disabled={isBulkAttaching || selectedIds.size === 0} className="btn btn-primary btn-sm" data-cy="bulk-attach">
+              <Plus size={14} />
+              <span>{isBulkAttaching ? 'Attaching...' : `Attach Selected${selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}`}</span>
+            </button>
+            {selectedIds.size > 0 && (
               <button onClick={onClearSelection} className="btn btn-secondary btn-sm">
                 Clear
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
 

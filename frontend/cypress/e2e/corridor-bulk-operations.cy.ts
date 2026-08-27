@@ -22,11 +22,11 @@ describe('Bulk Corridor Operations', () => {
       cy.get('[data-cy=bulk-attach]')
         .should('be.visible')
         .and('not.be.disabled')
-        .and('contain', `${CORRIDOR_IDS.length} Selected`)
+        .and('contain', `${CORRIDOR_IDS.length}`)
 
       cy.get('[data-cy=bulk-attach]').click()
 
-      cy.get('[data-cy=bulk-attach]').should('not.exist')
+      cy.get('[data-cy=bulk-attach]').should('be.disabled')
 
       cy.get('[data-cy=subtab-my-corridors]').click()
 
@@ -49,6 +49,9 @@ describe('Bulk Corridor Operations', () => {
         .and('contain', `${CORRIDOR_IDS.length}`)
 
       cy.get('[data-cy=bulk-detach]').click()
+
+      cy.get('[data-cy=confirm-dialog]').should('be.visible')
+      cy.get('[data-cy=confirm-ok]').click()
 
       CORRIDOR_IDS.forEach((id) => {
         cy.get(`[data-cy=corridor-row][data-cy-corridor-id="${id}"]`)

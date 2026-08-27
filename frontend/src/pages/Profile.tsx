@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { logoutUser } from '../features/auth/authSlice'
 import { quotesApi } from '../api/quotesApi'
 import { Navbar } from '../components/Navbar'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import type { Quote } from '../types/quote'
 import {
   ArrowLeft,
@@ -25,6 +26,7 @@ export const Profile: React.FC = () => {
   const navigate = useNavigate()
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
 
   useEffect(() => {
     quotesApi
@@ -35,7 +37,7 @@ export const Profile: React.FC = () => {
   }, [])
 
   const handleLogout = async () => {
-    if (!window.confirm('Are you sure you want to log out?')) return
+    setIsLogoutConfirmOpen(false)
     await dispatch(logoutUser())
     navigate('/login')
   }
@@ -122,7 +124,7 @@ export const Profile: React.FC = () => {
 
             {/* Logout Button */}
             <button
-              onClick={handleLogout}
+              onClick={() => setIsLogoutConfirmOpen(true)}
               className="btn btn-danger"
               style={{ display: 'flex', alignItems: 'center', gap: 8 }}
               data-cy="logout-button"
@@ -253,6 +255,17 @@ export const Profile: React.FC = () => {
           )}
         </div>
       </main>
+
+      {/* Logout confirmation */}
+      <ConfirmDialog
+        open={isLogoutConfirmOpen}
+        title="Log Out"
+        message="Are you sure you want to log out?"
+        confirmLabel="Log Out"
+        danger
+        onConfirm={handleLogout}
+        onCancel={() => setIsLogoutConfirmOpen(false)}
+      />
     </div>
   )
 }

@@ -171,34 +171,34 @@ export const MyCorridors: React.FC<MyCorridorsProps> = ({
           <span style={{ fontSize: 14, fontWeight: 700 }}>{corridors.length} Corridor{corridors.length !== 1 ? 's' : ''} Attached</span>
           <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 8 }}>Pricing calculated on backend</span>
         </div>
-        {isEditable && selectedIds.size > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{selectedIds.size} selected</span>
-            <button onClick={onBulkDetach} disabled={isBulkDetaching} className="btn btn-danger btn-sm" data-cy="bulk-detach">
-              <Trash2 size={14} />
-              <span>{isBulkDetaching ? 'Removing...' : `Remove ${selectedIds.size}`}</span>
-            </button>
-            <button onClick={onClearSelection} className="btn btn-secondary btn-sm">
-              Clear
-            </button>
-          </div>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {isEditable && (
+            <>
+              <button onClick={onSelectAll} className="btn btn-secondary btn-sm" data-cy="select-all-corridors">
+                {allSelected ? 'Deselect All' : 'Select All'}
+              </button>
+              <button onClick={onBulkDetach} disabled={isBulkDetaching || selectedIds.size === 0} className="btn btn-danger btn-sm" data-cy="bulk-detach">
+                <Trash2 size={14} />
+                <span>{isBulkDetaching ? 'Removing...' : `Delete Selected${selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}`}</span>
+              </button>
+              {selectedIds.size > 0 && (
+                <button onClick={onClearSelection} className="btn btn-secondary btn-sm">
+                  Clear
+                </button>
+              )}
+              <button onClick={onBrowseCatalog} className="btn btn-secondary btn-sm">
+                <Plus size={14} />
+                <span>Add More</span>
+              </button>
+            </>
+          )}
+        </div>
       </div>
       {/* Table */}
       <div className="corridor-table-scroll">
         <div style={{ minWidth: '1500px', width: '100%' }}>
           <div className="corridor-table-header" style={{ gridTemplateColumns: COLUMN_TEMPLATE }}>
-            <div style={{ padding: '10px 12px', display: 'flex', alignItems: 'center' }}>
-              {isEditable && (
-                <input
-                  type="checkbox"
-                  checked={allSelected}
-                  onChange={onSelectAll}
-                  style={{ cursor: 'pointer', width: 16, height: 16 }}
-                  data-cy="select-all-corridors"
-                />
-              )}
-            </div>
+            <div style={{ padding: '10px 12px' }} />
             {HEADERS.map((header, index) => (
               <div
                 key={index}

@@ -7,6 +7,7 @@ import { queryKeys } from '../lib/queryKeys'
 import type { Quote } from '../types/quote'
 import { Navbar } from '../components/Navbar'
 import { AuditTrail } from '../components/AuditTrail'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { QuoteHeader } from '../components/quote/QuoteHeader'
 import { QuoteOverviewTab } from '../components/quote/QuoteOverviewTab'
 import { QuoteCorridorsTab } from '../components/quote/QuoteCorridorsTab'
@@ -42,6 +43,7 @@ export const QuoteDetails: React.FC = () => {
   const [editContractLength, setEditContractLength] = useState(1)
   const [isSaving, setIsSaving] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitConfirmOpen, setIsSubmitConfirmOpen] = useState(false)
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   // Audit trail refresh trigger — incremented after mutations so the
@@ -165,8 +167,7 @@ export const QuoteDetails: React.FC = () => {
   // checking — no 409 conflict handling needed.
   const handleSubmit = async () => {
     if (!quote || !id) return
-    if (!window.confirm('Submit this quote for review? Editing will be locked once submitted.')) return
-
+    setIsSubmitConfirmOpen(false)
     setIsSubmitting(true)
     setNotification(null)
 
@@ -277,7 +278,7 @@ export const QuoteDetails: React.FC = () => {
             setEditContractLength(quote.contractLength ?? 1)
           }}
           onSave={handleSave}
-          onSubmit={handleSubmit}
+          onSubmit={() => setIsSubmitConfirmOpen(true)}
         />
 
         {/* Main Tab Navigation */}
@@ -331,6 +332,16 @@ export const QuoteDetails: React.FC = () => {
           </section>
         )}
       </main>
+
+      {/* Submit-for-review confirmation */}
+      <ConfirmDialog
+        open={isSubmitConfirmOpen}
+        title="Submit for Review"
+        message="Submit this quote for review? Editing will be locked once submitted."
+        confirmLabel="Submit"
+        onConfirm={handleSubmit}
+        onCancel={() => setIsSubmitConfirmOpen(false)}
+      />
     </div>
   )
 }
