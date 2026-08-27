@@ -98,97 +98,45 @@ export const Profile: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 60 }}>
-      <Navbar />
-
-      <main style={{ maxWidth: 920, margin: '0 auto', padding: '24px' }}>
-        {/* Back Link */}
-        <Link
-          to="/"
-          className="btn btn-secondary btn-sm"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            marginBottom: 20,
-            padding: '8px 16px',
-            borderRadius: 'var(--radius-md)',
-            textDecoration: 'none',
-          }}
-        >
+      <Navbar leftContent={
+        <Link to="/" className="back-link" data-cy="back-to-dashboard">
           <ArrowLeft size={16} />
           <span>Back to Dashboard</span>
         </Link>
+      } />
 
+      <main style={{ maxWidth: 920, margin: '0 auto', padding: '24px' }}>
         {/* ============ Hero Banner ============ */}
         <div
           className="glass-panel animate-fade-in"
           style={{
-            position: 'relative',
-            overflow: 'hidden',
             marginBottom: 20,
-            borderRadius: 'var(--radius-xl)',
+            borderRadius: 'var(--radius-lg)',
           }}
         >
-          {/* Gradient backdrop */}
-          <div style={{
-            position: 'absolute',
-            top: 0, left: 0, right: 0, bottom: 0,
-            background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(6, 182, 212, 0.08) 50%, transparent 100%)',
-            pointerEvents: 'none',
-          }} />
-
-          {/* Decorative glow orbs */}
-          <div style={{
-            position: 'absolute',
-            top: -40, right: -20,
-            width: 180, height: 180,
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, transparent 70%)',
-            pointerEvents: 'none',
-          }} />
-          <div style={{
-            position: 'absolute',
-            bottom: -60, left: 100,
-            width: 200, height: 200,
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(6, 182, 212, 0.12) 0%, transparent 70%)',
-            pointerEvents: 'none',
-          }} />
-
-          <div style={{ position: 'relative', padding: '36px 32px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
-              {/* Avatar with ring */}
-              <div style={{ position: 'relative', flexShrink: 0 }}>
-                <div style={{
-                  position: 'absolute',
-                  inset: -4,
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
-                  opacity: 0.6,
-                  filter: 'blur(8px)',
-                }} />
-                <div style={{
-                  width: 88,
-                  height: 88,
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 30,
-                  fontWeight: 800,
-                  color: '#ffffff',
-                  position: 'relative',
-                  border: '3px solid var(--bg-surface)',
-                  boxShadow: '0 8px 32px rgba(99, 102, 241, 0.35)',
-                }}>
-                  {initials}
-                </div>
+          <div style={{ padding: '28px 28px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 22, flexWrap: 'wrap' }}>
+              {/* Avatar */}
+              <div style={{
+                width: 72,
+                height: 72,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 24,
+                fontWeight: 800,
+                color: '#ffffff',
+                flexShrink: 0,
+                boxShadow: 'var(--shadow-md)',
+              }}>
+                {initials}
               </div>
 
               {/* Name & meta */}
               <div style={{ flex: 1, minWidth: 220 }}>
-                <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6, letterSpacing: '-0.02em' }}>
+                <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4, letterSpacing: '-0.02em' }}>
                   {user.fullName || 'User'}
                 </h1>
                 <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px 16px', color: 'var(--text-muted)', fontSize: 13 }}>
@@ -203,10 +151,10 @@ export const Profile: React.FC = () => {
                 </div>
 
                 {/* Quick pills */}
-                <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
                   <span style={{
                     display: 'inline-flex', alignItems: 'center', gap: 5,
-                    padding: '4px 10px', borderRadius: 'var(--radius-full)',
+                    padding: '3px 10px', borderRadius: 'var(--radius-full)',
                     background: 'var(--primary-light)', color: 'var(--primary)',
                     fontSize: 11, fontWeight: 700,
                   }}>
@@ -215,7 +163,7 @@ export const Profile: React.FC = () => {
                   </span>
                   <span style={{
                     display: 'inline-flex', alignItems: 'center', gap: 5,
-                    padding: '4px 10px', borderRadius: 'var(--radius-full)',
+                    padding: '3px 10px', borderRadius: 'var(--radius-full)',
                     background: 'var(--cyan-light)', color: 'var(--text-cyan)',
                     fontSize: 11, fontWeight: 700,
                   }}>
@@ -224,7 +172,7 @@ export const Profile: React.FC = () => {
                   </span>
                   <span style={{
                     display: 'inline-flex', alignItems: 'center', gap: 5,
-                    padding: '4px 10px', borderRadius: 'var(--radius-full)',
+                    padding: '3px 10px', borderRadius: 'var(--radius-full)',
                     background: 'var(--success-light)', color: 'var(--text-success)',
                     fontSize: 11, fontWeight: 700,
                   }}>

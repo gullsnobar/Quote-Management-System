@@ -5,7 +5,12 @@ import { User } from 'lucide-react'
 import { ThemeToggle } from './ThemeToggle'
 import { Logo } from './Logo'
 
-export const Navbar: React.FC = () => {
+interface NavbarProps {
+  /** Optional content rendered between the brand and the right-side actions. */
+  leftContent?: React.ReactNode
+}
+
+export const Navbar: React.FC<NavbarProps> = ({ leftContent }) => {
   const user = useAppSelector((state) => state.auth.user)
 
   const initials = (user?.fullName || user?.email || 'U')
@@ -45,6 +50,7 @@ export const Navbar: React.FC = () => {
 
         {/* User Info & Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          {leftContent}
           <ThemeToggle />
 
           {user && (

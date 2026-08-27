@@ -231,15 +231,14 @@ export const QuoteDetails: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 60 }} data-cy="quote-details">
-      <Navbar />
-
-      <main style={{ maxWidth: 1400, margin: '0 auto', padding: '24px' }}>
-        {/* Back Link */}
-        <Link to="/" className="back-link">
+      <Navbar leftContent={
+        <Link to="/" className="back-link" data-cy="back-to-quotes">
           <ArrowLeft size={16} />
           <span>Back to Quotes</span>
         </Link>
+      } />
 
+      <main style={{ maxWidth: 1400, margin: '0 auto', padding: '24px' }}>
         {/* Notification Banner */}
         {notification && (
           <div className={`notification-banner ${notification.type === 'success' ? 'notification-success' : 'notification-error'}`}>

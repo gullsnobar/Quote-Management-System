@@ -898,21 +898,21 @@ button:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 20px;
   padding: 8px 16px;
   border-radius: var(--radius-md);
   text-decoration: none;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-muted);
-  background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-medium);
+  color: var(--text-main);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
   transition: all 0.2s ease;
 }
 
 .back-link:hover {
-  color: var(--text-main);
-  border-color: var(--text-muted);
+  color: var(--primary);
+  background: var(--primary-light);
+  border-color: var(--border-glow);
 }
 
 /* ============================================================
