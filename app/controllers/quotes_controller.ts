@@ -148,7 +148,7 @@ export default class QuotesController {
       contractLength,
     })
 
-    const affectedRows = (await Quote.query()
+    const result = await Quote.query()
       .where('id', quote.id)
       .where('user_id', user.id)
       .where('version', submittedVersion)
@@ -160,7 +160,9 @@ export default class QuotesController {
         monthlyRevenue: summary.monthlyRevenue,
         tcv: summary.tcv,
         version: quote.version + 1,
-      })) as unknown as number
+      })
+
+    const affectedRows = Number(Array.isArray(result) ? result[0] : result)
 
     if (affectedRows === 0) {
       return response.conflict({
