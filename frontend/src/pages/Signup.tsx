@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authApi } from '../api/authApi'
-import { FileText, Lock, Mail, User, ArrowRight, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react'
+import { Lock, Mail, User, ArrowRight, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react'
+import { Logo } from '../components/Logo'
 
 export const Signup: React.FC = () => {
   const [fullName, setFullName] = useState('')
@@ -46,17 +47,12 @@ export const Signup: React.FC = () => {
         {/* Brand Header */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{
-            width: 52,
-            height: 52,
-            borderRadius: 'var(--radius-lg)',
-            background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: 'var(--primary-glow)',
             marginBottom: 16,
           }}>
-            <FileText size={28} color="#ffffff" />
+            <Logo size={56} />
           </div>
           <h2 style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.03em' }}>Create New Account</h2>
           <p style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 6 }}>

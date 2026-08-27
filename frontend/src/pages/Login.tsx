@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAppDispatch } from '../store/hooks'
 import { setCredentials } from '../features/auth/authSlice'
 import { authApi } from '../api/authApi'
-import { FileText, Lock, Mail, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react'
+import { Lock, Mail, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react'
+import { Logo } from '../components/Logo'
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('')
@@ -46,17 +47,12 @@ export const Login: React.FC = () => {
         {/* Brand Header */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{
-            width: 52,
-            height: 52,
-            borderRadius: 'var(--radius-lg)',
-            background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: 'var(--primary-glow)',
             marginBottom: 16,
           }}>
-            <FileText size={28} color="#ffffff" />
+            <Logo size={56} />
           </div>
           <h2 style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.03em' }}>Welcome to QuoteForge</h2>
           <p style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 6 }}>

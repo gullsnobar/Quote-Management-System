@@ -1,14 +1,11 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { useAppSelector } from '../store/hooks'
-import { FileText, User, PlusCircle } from 'lucide-react'
+import { User } from 'lucide-react'
 import { ThemeToggle } from './ThemeToggle'
+import { Logo } from './Logo'
 
-interface NavbarProps {
-  onNewQuote?: () => void
-}
-
-export const Navbar: React.FC<NavbarProps> = ({ onNewQuote }) => {
+export const Navbar: React.FC = () => {
   const user = useAppSelector((state) => state.auth.user)
 
   const initials = (user?.fullName || user?.email || 'U')
@@ -37,18 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNewQuote }) => {
       }}>
         {/* Brand */}
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
-          <div style={{
-            width: 38,
-            height: 38,
-            borderRadius: 'var(--radius-md)',
-            background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: 'var(--primary-glow)',
-          }}>
-            <FileText size={20} color="#ffffff" />
-          </div>
+          <Logo size={48} style={{ borderRadius: 'var(--radius-md)' }} />
           <div>
             <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
               QuoteForge <span style={{ color: 'var(--cyan)', fontSize: 12, fontWeight: 600, padding: '2px 6px', background: 'var(--cyan-light)', borderRadius: 4 }}>QMS</span>
@@ -59,13 +45,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onNewQuote }) => {
 
         {/* User Info & Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          {onNewQuote && (
-            <button onClick={onNewQuote} className="btn btn-primary btn-sm" data-cy="nav-create-quote">
-              <PlusCircle size={15} />
-              <span>Create Quote</span>
-            </button>
-          )}
-
           <ThemeToggle />
 
           {user && (

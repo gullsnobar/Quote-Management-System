@@ -3,15 +3,6 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import type { Corridor, CorridorFilters as FiltersType } from '../../types/corridor'
 import { CorridorFilters } from '../corridors/CorridorFilters'
 import { TrendingUp, TrendingDown, Plus, AlertCircle } from 'lucide-react'
-
-/**
- * Props for the BrowseCorridors component.
- *
- * This is a presentational component with virtualization — all state
- * and handlers are passed from the parent (QuoteCorridorsTab). The
- * catalog table uses @tanstack/react-virtual to handle the ~3,000
- * corridor catalog efficiently.
- */
 export interface BrowseCorridorsProps {
   /** Filtered corridors from the catalog query. */
   corridors: Corridor[]

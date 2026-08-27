@@ -12,7 +12,7 @@ describe('Quote Creation', () => {
     cy.visit('/')
     cy.contains('h1', 'Quotes Dashboard').should('be.visible')
 
-    cy.get('[data-cy=nav-create-quote]').click()
+    cy.get('[data-cy=create-quote-button]').click()
 
     cy.get('[data-cy=create-quote-name]').should('be.visible').type(quoteName)
     cy.get('[data-cy=create-quote-partner]').type(partnerName)

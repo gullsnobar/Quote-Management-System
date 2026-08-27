@@ -179,7 +179,7 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 60 }}>
-      <Navbar onNewQuote={() => setIsModalOpen(true)} />
+      <Navbar />
 
       <main style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 24px' }}>
         {/* Page Header */}
@@ -200,7 +200,7 @@ export const Dashboard: React.FC = () => {
           <button
             onClick={() => setIsModalOpen(true)}
             className="btn btn-primary"
-            data-cy="header-create-quote"
+            data-cy="create-quote-button"
           >
             <PlusCircle size={16} />
             <span>Create Quote</span>
