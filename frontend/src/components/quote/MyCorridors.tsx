@@ -40,9 +40,9 @@ export interface MyCorridorsProps {
   updatingFeeIds: Set<number>
 }
 
-const COLUMN_TEMPLATE = '40px 70px minmax(160px,1.4fr) minmax(160px,1.3fr) minmax(240px,2fr) 80px 90px 110px 110px 150px 130px 130px 100px 60px'
+const COLUMN_TEMPLATE = '40px 70px minmax(160px,1.4fr) minmax(160px,1.3fr) minmax(240px,2fr) 80px 90px 100px 160px 150px 130px 130px 100px 60px'
 
-const HEADERS = ['# ID', 'Region / Country', 'Type & Service', 'Receiving Partner & Payer', 'Ccy', 'ATV (USD)', 'Std Fee', 'Neg. Fee', 'Revenue ($)', 'Cost ($)', 'Margin ($)', 'Margin %', '', '']
+const HEADERS = ['# ID', 'Region / Country', 'Type & Service', 'Receiving Partner & Payer', 'Ccy', 'ATV (USD)', 'Std Fee', 'Neg. Fee', 'Revenue ($)', 'Cost ($)', 'Margin ($)', 'Margin %', '']
 
 /**
  * Renders the "My Corridors" sub-tab: corridors attached to the quote

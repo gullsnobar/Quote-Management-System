@@ -491,10 +491,12 @@ export default class QuotesController {
 
     const payload = await request.validateUsing(updateNegotiatedFeeValidator)
 
-    // Update the pivot row's negotiated_fee column
+    // Update the pivot row's negotiated_fee column.
+    // Pass `false` for detach so sync only updates the specified
+    // corridor's pivot row without removing the other attached corridors.
     await quote.related('corridors').sync({
       [corridorId]: { negotiated_fee: payload.negotiatedFee },
-    })
+    }, false)
 
     // Capture the old value for audit before the sync overwrote it.
     // We read it from the preloaded corridors' pivot extras.
