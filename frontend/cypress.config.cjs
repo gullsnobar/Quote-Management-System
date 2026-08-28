@@ -19,25 +19,25 @@ module.exports = defineConfig({
           const modules = path.join(cacheRoot, versions[0], 'Cypress', 'resources', 'app', 'node_modules')
           const preprocessor = require(path.join(modules, '@cypress', 'webpack-batteries-included-preprocessor'))
           on('file:preprocessor', preprocessor({
-            typescript: require.resolve('typescript'),
-            webpackOptions: {
-              module: {
-                rules: [
-                  {
-                    test: /\.ts$/,
-                    use: [
-                      {
-                        loader: path.join(modules, 'ts-loader'),
-                        options: {
-                          transpileOnly: true,
-                          configFile: path.resolve(__dirname, 'cypress', 'tsconfig.json'),
-                        },
-                      },
-                    ],
-                  },
-                ],
-              },
-            },
+          typescript: require.resolve('typescript'),
+          webpackOptions: {
+          module: {
+          rules: [
+          {
+          test: /\.ts$/,
+          use: [
+          {
+          loader: path.join(modules, 'ts-loader'),
+          options: {
+          transpileOnly: true,
+          configFile: path.resolve(__dirname, 'cypress', 'tsconfig.json'),
+          },
+          },
+          ],
+          },
+          ],
+          },
+          },
           }))
         }
       }

@@ -27,8 +27,8 @@ describe('Optimistic Concurrency Conflict', () => {
         body: { name, partnerName, contractLength: 1, version },
         headers,
         log: false,
-      }).then(() => undefined)
-    )
+      })
+    ).then(() => cy.wrap<void>(undefined))
   }
 
   it('rejects a stale save with a 409 conflict and does not overwrite the server state', () => {
